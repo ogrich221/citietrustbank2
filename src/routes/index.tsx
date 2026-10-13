@@ -237,7 +237,7 @@ function Wellness() {
 function Stories() {
   const s = [
     { img: m1, q: "When the bakery needed a new oven, Trustora actually sat down with me and figured it out.", n: "Luis R.", r: "Small business member, 9 years" },
-    { img: teamPhoto, q: "Early direct deposit sounds small until you work night shifts. It genuinely takes the stress off.", n: "Priya S.", r: "Member since 2021" },
+    { img: teamPhoto.url, q: "Early direct deposit sounds small until you work night shifts. It genuinely takes the stress off.", n: "Priya S.", r: "Member since 2021" },
     { img: m3, q: "They helped us refinance and plan for retirement. It feels like banking with neighbors.", n: "Ann & Tom K.", r: "Members, 24 years" },
   ];
   return (
