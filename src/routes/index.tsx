@@ -33,9 +33,7 @@ import {
   Award,
   Landmark,
   Scale,
-  Users2,
-  CheckCircle2,
-  HelpCircle,
+  Users,
 } from "lucide-react";
 import heroAsset from "@/assets/hero-boardroom.jpg.asset.json";
 import m1 from "@/assets/member-1.jpg";
@@ -295,7 +293,7 @@ function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
               <Clock className="h-4 w-4 text-[#9E7D2B]" /> 4-Step Secure Online Application
             </span>
             <span className="flex items-center gap-2">
-              <Users2 className="h-4 w-4 text-[#102A43]" /> Member-Owned & Community Governed
+              <Users className="h-4 w-4 text-[#102A43]" /> Member-Owned & Community Governed
             </span>
           </div>
         </div>
@@ -405,7 +403,7 @@ function CooperativePrinciples() {
       num: "01",
       title: "Member Sovereignty",
       desc: "Every member holds one equal share and one vote at our annual member assembly, regardless of account balance.",
-      icon: Users2,
+      icon: Users,
     },
     {
       num: "02",

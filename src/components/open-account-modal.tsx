@@ -2,12 +2,11 @@ import React, { useState, useId } from "react";
 import {
   ShieldCheck,
   Building2,
-  CheckCircle2,
-  AlertCircle,
+  Check,
   ArrowRight,
   ArrowLeft,
   FileText,
-  HelpCircle,
+  Phone,
   Sparkles,
 } from "lucide-react";
 import {
@@ -68,6 +67,42 @@ export interface ApplicationFormData {
   consentMembership: boolean;
   consentCreditCheck: boolean;
   consentW9: boolean;
+}
+
+export interface FormErrors {
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  dob?: string | undefined;
+  email?: string | undefined;
+  phone?: string | undefined;
+  street?: string | undefined;
+  apt?: string | undefined;
+  city?: string | undefined;
+  state?: string | undefined;
+  zip?: string | undefined;
+  citizenship?: string | undefined;
+  accountType?: string | undefined;
+  idType?: string | undefined;
+  idNumber?: string | undefined;
+  idState?: string | undefined;
+  ssnLast4?: string | undefined;
+  employmentStatus?: string | undefined;
+  employer?: string | undefined;
+  annualIncome?: string | undefined;
+  username?: string | undefined;
+  password?: string | undefined;
+  confirmPassword?: string | undefined;
+  mfaPreference?: string | undefined;
+  securityQuestion1?: string | undefined;
+  securityAnswer1?: string | undefined;
+  securityQuestion2?: string | undefined;
+  securityAnswer2?: string | undefined;
+  securityQuestion3?: string | undefined;
+  securityAnswer3?: string | undefined;
+  consentElectronic?: string | undefined;
+  consentMembership?: string | undefined;
+  consentCreditCheck?: string | undefined;
+  consentW9?: string | undefined;
 }
 
 const INITIAL_FORM_DATA: ApplicationFormData = {
@@ -143,7 +178,7 @@ export function OpenAccountModal({
     ...INITIAL_FORM_DATA,
     accountType: defaultAccountType || "heritage_checking",
   }));
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showAnswers, setShowAnswers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,7 +187,10 @@ export function OpenAccountModal({
 
   const formId = useId();
 
-  const handleInputChange = (field: keyof ApplicationFormData, value: any) => {
+  const handleInputChange = <K extends keyof ApplicationFormData>(
+    field: K,
+    value: ApplicationFormData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => {
@@ -164,7 +202,7 @@ export function OpenAccountModal({
   };
 
   const validateStep1 = (): boolean => {
-    const errs: Record<string, string> = {};
+    const errs: FormErrors = {};
     if (!formData.firstName.trim()) errs.firstName = "First name is required";
     if (!formData.lastName.trim()) errs.lastName = "Last name is required";
     if (!formData.dob) {
@@ -201,7 +239,7 @@ export function OpenAccountModal({
   };
 
   const validateStep2 = (): boolean => {
-    const errs: Record<string, string> = {};
+    const errs: FormErrors = {};
     if (!formData.idNumber.trim()) errs.idNumber = "Government ID number is required";
     if (!formData.ssnLast4.trim()) {
       errs.ssnLast4 = "Last 4 digits of SSN/ITIN are required";
@@ -220,7 +258,7 @@ export function OpenAccountModal({
     return Object.keys(errs).length === 0;
   };
 
-  const calculatePasswordStrength = (pass: string) => {
+  const calculatePasswordStrength = (pass: string): number => {
     let score = 0;
     if (pass.length >= 8) score++;
     if (pass.length >= 12) score++;
@@ -231,7 +269,7 @@ export function OpenAccountModal({
   };
 
   const validateStep3 = (): boolean => {
-    const errs: Record<string, string> = {};
+    const errs: FormErrors = {};
     if (!formData.username.trim() || formData.username.length < 6) {
       errs.username = "Username must be at least 6 alphanumeric characters";
     } else if (!/^[a-zA-Z0-9._-]+$/.test(formData.username)) {
@@ -269,7 +307,7 @@ export function OpenAccountModal({
   };
 
   const validateStep4 = (): boolean => {
-    const errs: Record<string, string> = {};
+    const errs: FormErrors = {};
     if (!formData.consentElectronic) {
       errs.consentElectronic = "Electronic communications consent is required";
     }
@@ -330,7 +368,7 @@ export function OpenAccountModal({
 
   const passwordStrength = calculatePasswordStrength(formData.password);
 
-  const getAccountLabel = (val: string) => {
+  const getAccountLabel = (val: string): string => {
     switch (val) {
       case "heritage_checking":
         return "Heritage Free Checking ($0 Monthly Fee · Free Debit Card)";
@@ -345,7 +383,7 @@ export function OpenAccountModal({
     }
   };
 
-  const getIdLabel = (val: string) => {
+  const getIdLabel = (val: string): string => {
     switch (val) {
       case "drivers_license":
         return "State Driver's License";
@@ -360,7 +398,7 @@ export function OpenAccountModal({
     }
   };
 
-  const getCitizenshipLabel = (val: string) => {
+  const getCitizenshipLabel = (val: string): string => {
     switch (val) {
       case "us_citizen":
         return "U.S. Citizen";
@@ -373,7 +411,7 @@ export function OpenAccountModal({
     }
   };
 
-  const getEmploymentLabel = (val: string) => {
+  const getEmploymentLabel = (val: string): string => {
     switch (val) {
       case "employed_full_time":
         return "Employed Full-Time";
@@ -461,8 +499,8 @@ export function OpenAccountModal({
           {/* SUCCESS SCREEN */}
           {isSubmitted ? (
             <div className="py-6 text-center animate-in fade-in zoom-in-95 duration-400">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#D4AF37] bg-[#E8F5E9] text-[#1E4D2B] shadow-soft">
-                <CheckCircle2 className="h-9 w-9 text-[#2E7D32]" />
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#D4AF37] bg-[#E8F5E9] text-[#1E4D2B] shadow-sm">
+                <Check className="h-9 w-9 text-[#2E7D32]" />
               </div>
 
               <span className="mt-4 inline-block rounded-full border border-[#D4AF37]/50 bg-[#F4ECD8] px-3.5 py-1 text-xs font-serif font-bold uppercase tracking-wider text-[#795548]">
@@ -556,7 +594,7 @@ export function OpenAccountModal({
               <div className="mt-8">
                 <Button
                   onClick={handleResetAndClose}
-                  className="rounded-md bg-[#102A43] px-8 py-2.5 font-serif text-sm font-semibold text-[#FBF9F5] shadow-soft hover:bg-[#16385C]"
+                  className="rounded-md bg-[#102A43] px-8 py-2.5 font-serif text-sm font-semibold text-[#FBF9F5] shadow-md hover:bg-[#16385C]"
                 >
                   Return to Homepage
                 </Button>
@@ -642,8 +680,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.firstName && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.firstName}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.firstName}
                         </p>
                       )}
                     </div>
@@ -669,8 +707,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.lastName && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.lastName}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.lastName}
                         </p>
                       )}
                     </div>
@@ -698,8 +736,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.dob ? (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.dob}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.dob}
                         </p>
                       ) : (
                         <p className="mt-1 text-[11px] text-muted-foreground">
@@ -751,8 +789,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.email && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.email}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.email}
                         </p>
                       )}
                     </div>
@@ -778,8 +816,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.phone ? (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.phone}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.phone}
                         </p>
                       ) : (
                         <p className="mt-1 text-[11px] text-muted-foreground">
@@ -814,8 +852,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.street && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.street}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.street}
                         </p>
                       )}
                     </div>
@@ -859,7 +897,7 @@ export function OpenAccountModal({
                           }`}
                         />
                         {errors.city && (
-                          <p className="mt-1 text-xs text-red-600">{errors.city}</p>
+                          <p className="mt-1 text-xs text-red-600 font-medium">{errors.city}</p>
                         )}
                       </div>
 
@@ -887,7 +925,7 @@ export function OpenAccountModal({
                           }`}
                         />
                         {errors.state && (
-                          <p className="mt-1 text-xs text-red-600">{errors.state}</p>
+                          <p className="mt-1 text-xs text-red-600 font-medium">{errors.state}</p>
                         )}
                       </div>
 
@@ -913,7 +951,7 @@ export function OpenAccountModal({
                           }`}
                         />
                         {errors.zip && (
-                          <p className="mt-1 text-xs text-red-600">{errors.zip}</p>
+                          <p className="mt-1 text-xs text-red-600 font-medium">{errors.zip}</p>
                         )}
                       </div>
                     </div>
@@ -991,8 +1029,8 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.idNumber && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
-                          <AlertCircle className="h-3 w-3" /> {errors.idNumber}
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          {errors.idNumber}
                         </p>
                       )}
                     </div>
@@ -1053,8 +1091,8 @@ export function OpenAccountModal({
                       </div>
                     </div>
                     {errors.ssnLast4 && (
-                      <p className="mt-2 flex items-center gap-1 text-xs text-red-600">
-                        <AlertCircle className="h-3 w-3" /> {errors.ssnLast4}
+                      <p className="mt-2 text-xs text-red-600 font-medium">
+                        {errors.ssnLast4}
                       </p>
                     )}
                   </div>
@@ -1103,7 +1141,7 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.employer && (
-                        <p className="mt-1 text-xs text-red-600">{errors.employer}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.employer}</p>
                       )}
                     </div>
                   </div>
@@ -1146,7 +1184,7 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.username ? (
-                        <p className="mt-1 text-xs text-red-600">{errors.username}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.username}</p>
                       ) : (
                         <p className="mt-1 text-[11px] text-muted-foreground">
                           Minimum 6 characters. Letters and numbers only.
@@ -1221,7 +1259,7 @@ export function OpenAccountModal({
                         </div>
                       </div>
                       {errors.password && (
-                        <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.password}</p>
                       )}
                     </div>
                   </div>
@@ -1247,7 +1285,7 @@ export function OpenAccountModal({
                       }`}
                     />
                     {errors.confirmPassword && (
-                      <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>
+                      <p className="mt-1 text-xs text-red-600 font-medium">{errors.confirmPassword}</p>
                     )}
                   </div>
 
@@ -1365,7 +1403,7 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.securityAnswer1 && (
-                        <p className="mt-1 text-xs text-red-600">{errors.securityAnswer1}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.securityAnswer1}</p>
                       )}
                     </div>
 
@@ -1401,7 +1439,7 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.securityAnswer2 && (
-                        <p className="mt-1 text-xs text-red-600">{errors.securityAnswer2}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.securityAnswer2}</p>
                       )}
                     </div>
 
@@ -1437,7 +1475,7 @@ export function OpenAccountModal({
                         }`}
                       />
                       {errors.securityAnswer3 && (
-                        <p className="mt-1 text-xs text-red-600">{errors.securityAnswer3}</p>
+                        <p className="mt-1 text-xs text-red-600 font-medium">{errors.securityAnswer3}</p>
                       )}
                     </div>
                   </div>
@@ -1584,7 +1622,7 @@ export function OpenAccountModal({
                       </span>
                     </label>
                     {errors.consentElectronic && (
-                      <p className="ml-6 text-xs text-red-600">{errors.consentElectronic}</p>
+                      <p className="ml-6 text-xs text-red-600 font-medium">{errors.consentElectronic}</p>
                     )}
 
                     <label className="flex items-start gap-2.5 cursor-pointer">
@@ -1603,7 +1641,7 @@ export function OpenAccountModal({
                       </span>
                     </label>
                     {errors.consentMembership && (
-                      <p className="ml-6 text-xs text-red-600">{errors.consentMembership}</p>
+                      <p className="ml-6 text-xs text-red-600 font-medium">{errors.consentMembership}</p>
                     )}
 
                     <label className="flex items-start gap-2.5 cursor-pointer">
@@ -1623,7 +1661,7 @@ export function OpenAccountModal({
                       </span>
                     </label>
                     {errors.consentCreditCheck && (
-                      <p className="ml-6 text-xs text-red-600">{errors.consentCreditCheck}</p>
+                      <p className="ml-6 text-xs text-red-600 font-medium">{errors.consentCreditCheck}</p>
                     )}
 
                     <label className="flex items-start gap-2.5 cursor-pointer">
@@ -1642,7 +1680,7 @@ export function OpenAccountModal({
                       </span>
                     </label>
                     {errors.consentW9 && (
-                      <p className="ml-6 text-xs text-red-600">{errors.consentW9}</p>
+                      <p className="ml-6 text-xs text-red-600 font-medium">{errors.consentW9}</p>
                     )}
                   </div>
                 </div>
@@ -1652,7 +1690,7 @@ export function OpenAccountModal({
               <div className="mt-8 flex flex-col gap-4 border-t border-[#E3DCCE] pt-5 sm:flex-row sm:items-center sm:justify-between">
                 {/* Visible Support Option */}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <HelpCircle className="h-4 w-4 text-[#C5A059]" />
+                  <Phone className="h-4 w-4 text-[#C5A059]" />
                   <span>
                     Need help? Call Member Desk:{" "}
                     <a
@@ -1681,7 +1719,7 @@ export function OpenAccountModal({
                     <Button
                       type="button"
                       onClick={handleNext}
-                      className="rounded-md bg-[#102A43] px-6 py-2.5 font-serif text-xs font-semibold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-soft hover:bg-[#16385C]"
+                      className="rounded-md bg-[#102A43] px-6 py-2.5 font-serif text-xs font-semibold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-sm hover:bg-[#16385C]"
                     >
                       Continue <ArrowRight className="ml-1.5 h-3.5 w-3.5 text-[#E6C663]" />
                     </Button>
@@ -1689,7 +1727,7 @@ export function OpenAccountModal({
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-lift hover:bg-[#16385C] disabled:opacity-50"
+                      className="rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md hover:bg-[#16385C] disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">
