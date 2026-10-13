@@ -1,3 +1,5 @@
+// ============= Full file contents =============
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -5,8 +7,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Fraunces", Georgia, serif;
-  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-display: "Libre Baskerville", Georgia, serif;
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -39,36 +41,38 @@
 }
 
 :root {
-  --radius: 1rem;
-  --background: oklch(0.985 0.004 160);
-  --foreground: oklch(0.22 0.05 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.05 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.05 260);
-  --primary: oklch(0.26 0.07 262);
-  --primary-foreground: oklch(0.98 0.005 160);
-  --navy: oklch(0.24 0.065 262);
-  --navy-foreground: oklch(0.96 0.01 200);
-  --emerald: oklch(0.58 0.13 162);
-  --emerald-soft: oklch(0.95 0.04 162);
-  --secondary: oklch(0.955 0.01 250);
-  --secondary-foreground: oklch(0.26 0.07 262);
-  --muted: oklch(0.96 0.008 220);
-  --muted-foreground: oklch(0.5 0.03 255);
-  --accent: oklch(0.95 0.04 162);
-  --accent-foreground: oklch(0.38 0.1 162);
-  --destructive: oklch(0.58 0.2 27);
+  /* Heritage palette: warm parchment, ink, deep navy, brass gold.
+     Token names kept from the previous theme (emerald = accent, navy = dark band). */
+  --radius: 0.5rem;
+  --background: oklch(0.972 0.012 85);
+  --foreground: oklch(0.24 0.02 60);
+  --card: oklch(0.995 0.004 85);
+  --card-foreground: oklch(0.24 0.02 60);
+  --popover: oklch(0.995 0.004 85);
+  --popover-foreground: oklch(0.24 0.02 60);
+  --primary: oklch(0.27 0.06 262);
+  --primary-foreground: oklch(0.97 0.01 85);
+  --navy: oklch(0.24 0.055 262);
+  --navy-foreground: oklch(0.96 0.012 85);
+  --emerald: oklch(0.6 0.095 80);
+  --emerald-soft: oklch(0.94 0.045 85);
+  --secondary: oklch(0.94 0.012 80);
+  --secondary-foreground: oklch(0.27 0.06 262);
+  --muted: oklch(0.955 0.014 85);
+  --muted-foreground: oklch(0.47 0.025 65);
+  --accent: oklch(0.94 0.045 85);
+  --accent-foreground: oklch(0.42 0.075 70);
+  --destructive: oklch(0.55 0.19 27);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.92 0.01 240);
-  --input: oklch(0.92 0.01 240);
-  --ring: oklch(0.58 0.13 162);
-  --gradient-hero: radial-gradient(60% 60% at 80% 20%, oklch(0.93 0.06 162 / 0.7), transparent 70%),
-    radial-gradient(50% 50% at 10% 90%, oklch(0.92 0.03 255 / 0.7), transparent 70%);
-  --gradient-navy: linear-gradient(135deg, oklch(0.24 0.065 262), oklch(0.3 0.08 230));
-  --gradient-emerald: linear-gradient(135deg, oklch(0.58 0.13 162), oklch(0.66 0.12 180));
-  --shadow-soft: 0 1px 2px oklch(0.2 0.05 260 / 0.04), 0 12px 32px -12px oklch(0.2 0.05 260 / 0.14);
-  --shadow-lift: 0 2px 4px oklch(0.2 0.05 260 / 0.05), 0 30px 60px -20px oklch(0.2 0.05 260 / 0.28);
+  --border: oklch(0.88 0.015 80);
+  --input: oklch(0.88 0.015 80);
+  --ring: oklch(0.6 0.095 80);
+  --gradient-hero: radial-gradient(60% 60% at 80% 20%, oklch(0.93 0.05 85 / 0.7), transparent 70%),
+    radial-gradient(50% 50% at 10% 90%, oklch(0.93 0.02 262 / 0.5), transparent 70%);
+  --gradient-navy: linear-gradient(135deg, oklch(0.22 0.055 262), oklch(0.3 0.06 255));
+  --gradient-emerald: linear-gradient(135deg, oklch(0.6 0.095 80), oklch(0.7 0.085 70));
+  --shadow-soft: 0 1px 2px oklch(0.25 0.04 60 / 0.06), 0 12px 32px -12px oklch(0.25 0.04 60 / 0.16);
+  --shadow-lift: 0 2px 4px oklch(0.25 0.04 60 / 0.07), 0 30px 60px -20px oklch(0.25 0.04 60 / 0.3);
 }
 
 @utility bg-hero { background-image: var(--gradient-hero); }
@@ -90,5 +94,5 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0; }
 }

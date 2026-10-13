@@ -4,10 +4,11 @@ import {
   Fingerprint, Radar, Clock, ArrowRight, ArrowUpRight, Lock, Coffee, ShoppingBag, Briefcase,
   Facebook, Instagram, Linkedin, Twitter, Phone, Mail, MapPin, Quote, Sparkles,
 } from "lucide-react";
-import hero from "@/assets/hero.jpg";
+import heroAsset from "@/assets/hero-boardroom.jpg.asset.json";
 import m1 from "@/assets/member-1.jpg";
-import m2 from "@/assets/member-2.jpg";
+import teamPhoto from "@/assets/team-documents.jpg.asset.json";
 import m3 from "@/assets/member-3.jpg";
+const hero = heroAsset.url;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,8 +24,8 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
-const btnGhost = "inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:border-emerald hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const btnPrimary = "inline-flex items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+const btnGhost = "inline-flex items-center justify-center gap-2 rounded-md border border-border bg-card px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition hover:border-emerald hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const eyebrow = "text-xs font-semibold uppercase tracking-[0.18em] text-emerald";
 
 function Logo({ light = false }: { light?: boolean }) {
@@ -126,8 +127,8 @@ function Hero() {
           </div>
         </div>
         <div className="relative flex justify-center lg:justify-end">
-          <div className="relative h-[520px] w-full max-w-md overflow-hidden rounded-[2rem] shadow-lift md:h-[600px]">
-            <img src={hero} alt="A young professional checking her account on her phone at home" className="h-full w-full object-cover" width={1024} height={1280} />
+          <div className="relative h-[520px] w-full max-w-md overflow-hidden rounded-xl border border-border shadow-lift md:h-[600px]">
+            <img src={hero} alt="Trustora team members talking around the boardroom table" className="h-full w-full object-cover" width={735} height={1000} />
           </div>
           <div className="absolute -bottom-10 left-0 w-[88%] sm:left-auto sm:right-[52%] sm:w-auto lg:right-[58%] animate-in fade-in slide-in-from-bottom-6 duration-1000">
             <AccountCard />
@@ -236,7 +237,7 @@ function Wellness() {
 function Stories() {
   const s = [
     { img: m1, q: "When the bakery needed a new oven, Trustora actually sat down with me and figured it out.", n: "Luis R.", r: "Small business member, 9 years" },
-    { img: m2, q: "Early direct deposit sounds small until you work night shifts. It genuinely takes the stress off.", n: "Priya S.", r: "Member since 2021" },
+    { img: teamPhoto, q: "Early direct deposit sounds small until you work night shifts. It genuinely takes the stress off.", n: "Priya S.", r: "Member since 2021" },
     { img: m3, q: "They helped us refinance and plan for retirement. It feels like banking with neighbors.", n: "Ann & Tom K.", r: "Members, 24 years" },
   ];
   return (
