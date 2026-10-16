@@ -22,6 +22,7 @@ export interface OpenAccountModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultAccountType?: string;
+  onSuccessOpenPortal?: () => void;
 }
 
 export type StepNumber = 1 | 2 | 3 | 4;
@@ -172,6 +173,7 @@ export function OpenAccountModal({
   open,
   onOpenChange,
   defaultAccountType,
+  onSuccessOpenPortal,
 }: OpenAccountModalProps) {
   const [step, setStep] = useState<StepNumber>(1);
   const [formData, setFormData] = useState<ApplicationFormData>(() => ({
@@ -345,10 +347,46 @@ export function OpenAccountModal({
     setIsSubmitting(true);
     // Simulate secure transmission to credit union underwriting ledger
     setTimeout(() => {
-      const generatedRef = `TCU-1952-${Math.floor(10000 + Math.random() * 90000)}`;
+      const generatedRef = `CET-1952-${Math.floor(10000 + Math.random() * 90000)}`;
       setReferenceNumber(generatedRef);
       setIsSubmitting(false);
       setIsSubmitted(true);
+
+      // Save user account and registered email for transfer OTP verification
+      try {
+        const newAccount = {
+          id: `acc_${Date.now()}`,
+          accountNumber: `0719${Math.floor(10000000 + Math.random() * 90000000)}`,
+          name: `${formData.firstName} ${formData.lastName} (${formData.accountType === "high_yield_savings" ? "Savings" : "Checking"})`,
+          type: formData.accountType === "high_yield_savings" ? "savings" : "checking",
+          currency: "USD",
+          balance: 8500.00,
+          availableBalance: 8500.00,
+          routingNumber: "071922841",
+          email: formData.email,
+          status: "active",
+        };
+
+        const existingRaw = localStorage.getItem("citietrust_accounts_v1");
+        const list = existingRaw ? JSON.parse(existingRaw) : [];
+        list.unshift(newAccount);
+        localStorage.setItem("citietrust_accounts_v1", JSON.stringify(list));
+
+        // Save active session for the user
+        localStorage.setItem(
+          "citietrust_active_member",
+          JSON.stringify({
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            username: formData.username,
+            accountNumber: newAccount.accountNumber,
+          })
+        );
+
+        window.dispatchEvent(new CustomEvent("citietrust_transfers_updated"));
+      } catch (err) {
+        console.error("Failed to register account for online transfers:", err);
+      }
     }, 1500);
   };
 
@@ -591,10 +629,24 @@ export function OpenAccountModal({
                 </ol>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                {onSuccessOpenPortal && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      handleResetAndClose();
+                      onSuccessOpenPortal();
+                    }}
+                    className="rounded-md border border-[#9E7D2B] bg-gradient-to-b from-[#E6C663] to-[#C5A059] px-6 py-2.5 font-serif text-sm font-bold text-[#102A43] shadow-md hover:from-[#ECD076] hover:to-[#CEAA64]"
+                  >
+                    Access Online Banking & Transfers →
+                  </Button>
+                )}
                 <Button
+                  type="button"
+                  variant="outline"
                   onClick={handleResetAndClose}
-                  className="rounded-md bg-[#102A43] px-8 py-2.5 font-serif text-sm font-semibold text-[#FBF9F5] shadow-md hover:bg-[#16385C]"
+                  className="rounded-md border-[#D5CEBF] bg-[#FFFDF9] px-6 py-2.5 font-serif text-sm font-semibold text-[#102A43] shadow-xs hover:bg-[#FAF8F5]"
                 >
                   Return to Homepage
                 </Button>

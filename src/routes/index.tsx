@@ -41,6 +41,7 @@ import m1 from "@/assets/member-1.jpg";
 import teamPhoto from "@/assets/team-documents.jpg.asset.json";
 import m3 from "@/assets/member-3.jpg";
 import { OpenAccountModal } from "@/components/open-account-modal";
+import { MemberPortalModal } from "@/components/member-portal-modal";
 
 const hero = heroAsset.url;
 
@@ -116,27 +117,26 @@ function HeritageTopTicker() {
           <span className="hidden text-slate-400 md:inline">|</span>
           <span className="hidden text-slate-300 md:inline">ROUTING # 071922841</span>
         </div>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/transfers"
-            className="text-[#E6C663] hover:underline font-serif font-semibold flex items-center gap-1"
-          >
-            <Globe className="h-3 w-3" /> Guided Wire Transfers
-          </Link>
-          <span className="text-slate-400">|</span>
-          <Link
-            to="/admin"
-            className="text-slate-300 hover:text-white transition font-serif flex items-center gap-1"
-          >
-            <Lock className="h-2.5 w-2.5 text-[#E6C663]" /> Staff Admin
-          </Link>
+        <div className="flex items-center gap-3">
+          <span className="rounded bg-[#16385C] px-2 py-0.5 font-mono text-[11px] text-[#E6C663] border border-[#D4AF37]/30">
+            6-MO CERTIFICATE: 5.15% APY
+          </span>
+          <span className="hidden sm:inline text-slate-300">
+            MEMBER SAVINGS: 4.10% APY
+          </span>
         </div>
       </div>
     </aside>
   );
 }
 
-function Nav({ onOpenAccount }: { onOpenAccount: () => void }) {
+function Nav({
+  onOpenAccount,
+  onOpenPortal,
+}: {
+  onOpenAccount: () => void;
+  onOpenPortal: () => void;
+}) {
   return (
     <header className="sticky top-0 z-40 border-b border-[#E3DCCE] bg-[#FAF8F5]/95 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Main">
@@ -149,14 +149,6 @@ function Nav({ onOpenAccount }: { onOpenAccount: () => void }) {
             >
               Accounts & Savings
             </a>
-          </li>
-          <li>
-            <Link
-              to="/transfers"
-              className="inline-flex items-center gap-1 font-serif text-xs font-bold uppercase tracking-wider text-[#9E7D2B] transition hover:text-[#102A43] hover:underline"
-            >
-              <Globe className="h-3.5 w-3.5" /> Wire & Transfers
-            </Link>
           </li>
           <li>
             <a
@@ -184,12 +176,13 @@ function Nav({ onOpenAccount }: { onOpenAccount: () => void }) {
           </li>
         </ul>
         <div className="flex items-center gap-3">
-          <Link
-            to="/transfers"
-            className="hidden rounded px-3 py-1.5 font-serif text-xs font-medium text-[#102A43] hover:bg-[#F2ECE1] sm:inline-flex items-center gap-1.5 border border-[#D5CEBF]"
+          <button
+            type="button"
+            onClick={onOpenPortal}
+            className="rounded px-3.5 py-2 font-serif text-xs font-semibold text-[#102A43] hover:bg-[#F2ECE1] inline-flex items-center gap-1.5 border border-[#D5CEBF] transition shadow-xs"
           >
-            <Globe className="h-3.5 w-3.5 text-[#9E7D2B]" /> Send Money
-          </Link>
+            <Lock className="h-3.5 w-3.5 text-[#9E7D2B]" /> Member Sign In
+          </button>
           <button
             type="button"
             onClick={onOpenAccount}
@@ -203,7 +196,7 @@ function Nav({ onOpenAccount }: { onOpenAccount: () => void }) {
   );
 }
 
-function AccountCard() {
+function AccountCard({ onOpenPortal }: { onOpenPortal?: () => void }) {
   const tx = [
     { icon: Briefcase, name: "Payroll Deposit · Bi-Weekly", date: "Today", amt: "+$2,840.00", pos: true },
     { icon: Award, name: "Quarterly Member Share Dividend", date: "Oct 12", amt: "+$142.50", pos: true },
@@ -282,17 +275,24 @@ function AccountCard() {
         </p>
       </div>
 
-      <Link
-        to="/transfers"
+      <button
+        type="button"
+        onClick={onOpenPortal}
         className="mt-3 flex items-center justify-center gap-1.5 w-full rounded-md border border-[#102A43] bg-[#102A43] py-2 text-xs font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C] transition shadow-xs"
       >
-        <Globe className="h-3.5 w-3.5 text-[#E6C663]" /> Guided Wire Transfers →
-      </Link>
+        <Lock className="h-3.5 w-3.5 text-[#E6C663]" /> Member Portal Sign In →
+      </button>
     </div>
   );
 }
 
-function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
+function Hero({
+  onOpenAccount,
+  onOpenPortal,
+}: {
+  onOpenAccount: () => void;
+  onOpenPortal: () => void;
+}) {
   return (
     <section className="relative overflow-hidden border-b border-[#E3DCCE] bg-gradient-to-b from-[#FAF8F5] via-[#F5EFEB] to-[#EFE7DC]">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 pb-20 pt-14 lg:grid-cols-[1.1fr_1fr] lg:pt-20">
@@ -318,9 +318,13 @@ function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
             >
               <ShieldCheck className="h-4 w-4 text-[#102A43]" /> Open an Account
             </button>
-            <Link to="/transfers" className={btnPrimary}>
-              <Globe className="h-4 w-4 text-[#E6C663]" /> Send Wire / Transfer
-            </Link>
+            <button
+              type="button"
+              onClick={onOpenPortal}
+              className={btnGhost}
+            >
+              <Lock className="h-4 w-4 text-[#9E7D2B]" /> Member Sign In
+            </button>
             <a href="#rates-board" className={btnGhost}>
               View Current Rates Board <ArrowRight className="h-4 w-4 text-[#9E7D2B]" />
             </a>
@@ -355,7 +359,7 @@ function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
             </div>
           </div>
           <div className="absolute -bottom-8 left-0 w-[92%] sm:left-auto sm:right-[48%] sm:w-auto lg:right-[54%] animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <AccountCard />
+            <AccountCard onOpenPortal={onOpenPortal} />
           </div>
         </div>
       </div>
@@ -711,7 +715,13 @@ function SecuritySection() {
   );
 }
 
-function Footer({ onOpenAccount }: { onOpenAccount: () => void }) {
+function Footer({
+  onOpenAccount,
+  onOpenPortal,
+}: {
+  onOpenAccount: () => void;
+  onOpenPortal: () => void;
+}) {
   const cols = {
     "Member Accounts": [
       "Heritage Free Checking",
@@ -816,9 +826,13 @@ function Footer({ onOpenAccount }: { onOpenAccount: () => void }) {
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-6">
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-slate-400">
-              <Link to="/transfers" className="text-[#E6C663] hover:underline font-semibold">
-                Domestic & International Transfers
-              </Link>
+              <button
+                type="button"
+                onClick={onOpenPortal}
+                className="text-[#E6C663] hover:underline font-semibold"
+              >
+                Member Online Banking
+              </button>
               <Link to="/admin" className="text-slate-300 hover:text-white">
                 Admin Console
               </Link>
@@ -838,6 +852,7 @@ function Footer({ onOpenAccount }: { onOpenAccount: () => void }) {
 
 function Index() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPortalOpen, setIsPortalOpen] = useState(false);
   const [selectedAccountType, setSelectedAccountType] = useState<string>("heritage_checking");
 
   const handleOpenAccount = (accType = "heritage_checking") => {
@@ -848,22 +863,38 @@ function Index() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#102A43]">
       <HeritageTopTicker />
-      <Nav onOpenAccount={() => handleOpenAccount("heritage_checking")} />
+      <Nav
+        onOpenAccount={() => handleOpenAccount("heritage_checking")}
+        onOpenPortal={() => setIsPortalOpen(true)}
+      />
       <main>
-        <Hero onOpenAccount={() => handleOpenAccount("heritage_checking")} />
+        <Hero
+          onOpenAccount={() => handleOpenAccount("heritage_checking")}
+          onOpenPortal={() => setIsPortalOpen(true)}
+        />
         <RatesBoard onOpenAccount={() => handleOpenAccount("high_yield_savings")} />
         <CooperativePrinciples />
         <Products onOpenAccount={handleOpenAccount} />
         <Stories />
         <SecuritySection />
       </main>
-      <Footer onOpenAccount={() => handleOpenAccount("heritage_checking")} />
+      <Footer
+        onOpenAccount={() => handleOpenAccount("heritage_checking")}
+        onOpenPortal={() => setIsPortalOpen(true)}
+      />
 
       {/* Multi-step Secure Open Account Modal */}
       <OpenAccountModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         defaultAccountType={selectedAccountType}
+        onSuccessOpenPortal={() => setIsPortalOpen(true)}
+      />
+
+      {/* Member Banking & Transfer Portal Modal */}
+      <MemberPortalModal
+        open={isPortalOpen}
+        onOpenChange={setIsPortalOpen}
       />
     </div>
   );
