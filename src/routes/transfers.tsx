@@ -1,0 +1,1348 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useMemo, useEffect } from "react";
+import { useTransfers } from "@/hooks/use-transfers";
+import {
+  type TransferType,
+  type BankTransfer,
+  maskAccountNumber,
+  maskEmail,
+  downloadTransferReceipt,
+} from "@/lib/transfers-store";
+import {
+  ShieldCheck,
+  Building2,
+  Globe,
+  ArrowRight,
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  Lock,
+  Download,
+  Copy,
+  RefreshCw,
+  Landmark,
+  FileText,
+  DollarSign,
+  Calendar,
+  User,
+  Info,
+  ExternalLink,
+  ChevronRight,
+  Mail,
+  KeyRound,
+  Eye,
+  EyeOff
+} from "lucide-react";
+
+export const Route = createFileRoute("/transfers")({
+  head: () => ({
+    meta: [
+      { title: "Wire & Electronic Transfers | citiEtrust Bank" },
+      {
+        name: "description",
+        content:
+          "Secure domestic ACH/Fedwire and international SWIFT wire transfers with dual-factor authorization and institutional compliance screening.",
+      },
+    ],
+  }),
+  component: TransfersPage,
+});
+
+// Exchange rates relative to 1 USD
+const FX_RATES: Record<string, number> = {
+  USD: 1.0,
+  EUR: 0.9245,
+  GBP: 0.7892,
+  CAD: 1.3650,
+  CHF: 0.8840,
+  JPY: 154.20,
+  AUD: 1.5210,
+};
+
+function TransfersPage() {
+  const { accounts, transfers, saveTransfer } = useTransfers();
+
+  // Wizard Step: 1 = Details, 2 = Review, 3 = OTP Verification, 4 = Confirmation
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
+
+  // Form State
+  const [transferType, setTransferType] = useState<TransferType>("domestic");
+  const [senderAccountId, setSenderAccountId] = useState<string>("");
+  const [recipientFullName, setRecipientFullName] = useState("");
+  const [recipientBankName, setRecipientBankName] = useState("");
+  const [accountNumberOrIBAN, setAccountNumberOrIBAN] = useState("");
+  const [confirmAccount, setConfirmAccount] = useState("");
+  const [bankIdentifierCode, setBankIdentifierCode] = useState(""); // Routing or SWIFT
+  const [amount, setAmount] = useState<string>("5000");
+  const [currency, setCurrency] = useState<string>("USD");
+  const [transferPurpose, setTransferPurpose] = useState<string>("Family Living Support & Expenses");
+  const [customMemo, setCustomMemo] = useState<string>("");
+  const [transferDateType, setTransferDateType] = useState<"now" | "scheduled">("now");
+  const [scheduledDate, setScheduledDate] = useState<string>("2026-10-25");
+
+  // International Address (Mandatory for International Wire)
+  const [recipientStreet, setRecipientStreet] = useState("");
+  const [recipientCity, setRecipientCity] = useState("");
+  const [recipientPostalCode, setRecipientPostalCode] = useState("");
+  const [recipientCountry, setRecipientCountry] = useState("United Kingdom");
+
+  // Validation Errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // OTP State
+  const [otpCode, setOtpCode] = useState<string>("");
+  const [simulatedExpectedOtp, setSimulatedExpectedOtp] = useState<string>("");
+  const [otpError, setOtpError] = useState<string>("");
+  const [otpCountdown, setOtpCountdown] = useState<number>(60);
+  const [otpCopied, setOtpCopied] = useState<boolean>(false);
+
+  // Completed Transfer Object
+  const [completedTransfer, setCompletedTransfer] = useState<BankTransfer | null>(null);
+
+  // Select initial sender account
+  useEffect(() => {
+    if (accounts.length > 0 && !senderAccountId) {
+      setSenderAccountId(accounts[0].id);
+    }
+  }, [accounts, senderAccountId]);
+
+  const selectedAccount = useMemo(() => {
+    return accounts.find((a) => a.id === senderAccountId) || accounts[0];
+  }, [accounts, senderAccountId]);
+
+  // Fee Calculation
+  const fee = transferType === "domestic" ? 0.0 : 35.0;
+  const numAmount = parseFloat(amount) || 0;
+  const exchangeRate = FX_RATES[currency] || 1.0;
+  const convertedAmount = currency !== "USD" ? numAmount * exchangeRate : undefined;
+  const totalDebitUSD = currency === "USD" ? numAmount + fee : numAmount / exchangeRate + fee;
+
+  const estimatedDelivery =
+    transferType === "domestic"
+      ? transferDateType === "now"
+        ? "Today by 5:00 PM EST (Fedwire Express)"
+        : `Scheduled for ${scheduledDate} (Fedwire)`
+      : transferDateType === "now"
+      ? "1-2 Business Days (SWIFT GPI Priority)"
+      : `Scheduled for ${scheduledDate} (SWIFT Wire)`;
+
+  // Generate simulated OTP when reaching Step 3
+  const generateNewOtp = () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setSimulatedExpectedOtp(code);
+    setOtpCode(code); // Pre-filled for effortless evaluation, editable by user
+    setOtpCountdown(60);
+    setOtpError("");
+  };
+
+  useEffect(() => {
+    if (currentStep === 3) {
+      generateNewOtp();
+    }
+  }, [currentStep]);
+
+  // Countdown timer for OTP
+  useEffect(() => {
+    if (currentStep !== 3 || otpCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setOtpCountdown((c) => Math.max(0, c - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [currentStep, otpCountdown]);
+
+  // Validation for Step 1
+  const validateStep1 = (): boolean => {
+    const errs: Record<string, string> = {};
+
+    if (!selectedAccount) {
+      errs.senderAccount = "Please select a valid sender account.";
+    }
+
+    if (!recipientFullName.trim()) {
+      errs.recipientFullName = "Beneficiary full legal name is required.";
+    }
+
+    if (!recipientBankName.trim()) {
+      errs.recipientBankName = "Beneficiary bank institution name is required.";
+    }
+
+    if (!accountNumberOrIBAN.trim()) {
+      errs.accountNumberOrIBAN =
+        transferType === "domestic"
+          ? "Beneficiary account number is required."
+          : "International IBAN or account number is required.";
+    }
+
+    if (transferType === "domestic" && accountNumberOrIBAN.trim() !== confirmAccount.trim()) {
+      errs.confirmAccount = "Account numbers do not match.";
+    }
+
+    if (!bankIdentifierCode.trim()) {
+      errs.bankIdentifierCode =
+        transferType === "domestic"
+          ? "9-digit ABA Routing transit number is required."
+          : "8 or 11-character SWIFT/BIC code is required.";
+    } else if (transferType === "domestic" && !/^\d{9}$/.test(bankIdentifierCode.trim())) {
+      errs.bankIdentifierCode = "ABA Routing Number must contain exactly 9 numeric digits.";
+    } else if (
+      transferType === "international" &&
+      !/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i.test(bankIdentifierCode.trim())
+    ) {
+      errs.bankIdentifierCode = "SWIFT/BIC must be 8 or 11 alphanumeric characters (e.g., BCGECHGGXXX).";
+    }
+
+    if (!amount || numAmount <= 0) {
+      errs.amount = "Please specify a positive transfer amount.";
+    } else if (selectedAccount && totalDebitUSD > selectedAccount.balance) {
+      errs.amount = `Insufficient ledger funds. Available: $${selectedAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+    }
+
+    if (transferType === "international") {
+      if (!recipientStreet.trim()) errs.recipientStreet = "Recipient physical street address is required for international SWIFT wires.";
+      if (!recipientCity.trim()) errs.recipientCity = "Recipient city is required.";
+      if (!recipientPostalCode.trim()) errs.recipientPostalCode = "Postal / ZIP code is required.";
+      if (!recipientCountry.trim()) errs.recipientCountry = "Destination country is required.";
+    }
+
+    if (transferDateType === "scheduled" && !scheduledDate) {
+      errs.scheduledDate = "Please pick a future execution date.";
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleProceedToReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateStep1()) {
+      setCurrentStep(2);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleProceedToVerification = () => {
+    setCurrentStep(3);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleVerifyAndSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpCode.trim() !== simulatedExpectedOtp.trim()) {
+      setOtpError("Invalid verification code. Please check the one-time passcode sent to your mail.");
+      return;
+    }
+
+    if (!selectedAccount) return;
+
+    // Build compliance flags
+    const complianceFlags: string[] = [];
+    if (numAmount >= 10000) complianceFlags.push("High-Value Wire (Exceeds $10,000 BSA Threshold)");
+    if (transferType === "international") complianceFlags.push("Cross-Border SWIFT Electronic Outflow");
+    if (transferPurpose.includes("Investment") || transferPurpose.includes("Escrow")) {
+      complianceFlags.push("Fiduciary / Escrow Beneficiary Classification");
+    }
+
+    const newTransfer = saveTransfer({
+      type: transferType,
+      senderAccount: {
+        id: selectedAccount.id,
+        name: selectedAccount.name,
+        accountNumberMasked: selectedAccount.accountNumberMasked,
+        ownerName: selectedAccount.ownerName,
+        ownerEmail: selectedAccount.ownerEmail,
+        currency: selectedAccount.currency,
+      },
+      recipientFullName: recipientFullName.trim(),
+      recipientBankName: recipientBankName.trim(),
+      accountNumberOrIBAN: accountNumberOrIBAN.trim(),
+      accountNumberMasked: maskAccountNumber(accountNumberOrIBAN),
+      bankIdentifierType: transferType === "domestic" ? "routing" : "swift",
+      bankIdentifierCode: bankIdentifierCode.trim().toUpperCase(),
+      amount: numAmount,
+      currency,
+      transferPurpose: customMemo.trim() ? `${transferPurpose} — ${customMemo.trim()}` : transferPurpose,
+      recipientAddress:
+        transferType === "international"
+          ? {
+              street: recipientStreet.trim(),
+              city: recipientCity.trim(),
+              postalCode: recipientPostalCode.trim(),
+              country: recipientCountry.trim(),
+            }
+          : undefined,
+      transferDateType,
+      scheduledDate: transferDateType === "scheduled" ? scheduledDate : undefined,
+      fee,
+      exchangeRate: currency !== "USD" ? exchangeRate : undefined,
+      convertedAmount,
+      estimatedDelivery,
+      totalDebitUSD,
+      verificationMethod: "Email OTP",
+      verificationEmail: maskEmail(selectedAccount.ownerEmail),
+      verifiedAt: new Date().toISOString(),
+      complianceFlags,
+    });
+
+    setCompletedTransfer(newTransfer);
+    setCurrentStep(4);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleStartNewTransfer = () => {
+    setCurrentStep(1);
+    setRecipientFullName("");
+    setRecipientBankName("");
+    setAccountNumberOrIBAN("");
+    setConfirmAccount("");
+    setBankIdentifierCode("");
+    setAmount("5000");
+    setCustomMemo("");
+    setRecipientStreet("");
+    setRecipientCity("");
+    setRecipientPostalCode("");
+    setErrors({});
+    setCompletedTransfer(null);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAF8F5] text-[#102A43] font-sans antialiased flex flex-col">
+      {/* Top Heritage Trust Banner */}
+      <aside className="border-b border-[#E3DCCE] bg-[#102A43] py-2 text-xs text-[#FBF9F5]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 text-[11px] sm:text-xs">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 font-serif font-semibold text-[#E6C663]">
+              <ShieldCheck className="h-3.5 w-3.5 text-[#E6C663]" /> citiEtrust BANK · WIRE & FUNDS TRANSFER DIVISION
+            </span>
+            <span className="hidden text-slate-400 sm:inline">|</span>
+            <span className="hidden text-slate-300 md:inline">ROUTING # 071922841 · FEDWIRE & SWIFT ENABLED</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link to="/admin" className="text-[#E6C663] hover:underline font-serif font-medium flex items-center gap-1">
+              <Lock className="h-3 w-3" /> Bank Admin Portal
+            </Link>
+            <span className="text-slate-400">|</span>
+            <Link to="/" className="text-slate-300 hover:text-white transition">
+              Return to Main Site
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Header */}
+      <header className="sticky top-0 z-30 border-b border-[#E3DCCE] bg-[#FAF8F5]/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link to="/" className="flex items-center gap-3">
+            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D4AF37]/60 bg-[#102A43] shadow-inner">
+              <Landmark className="h-6 w-6 text-[#E6C663]" />
+              <span className="absolute -bottom-1 rounded bg-[#E6C663] px-1 text-[8px] font-serif font-bold text-[#102A43]">
+                1952
+              </span>
+            </span>
+            <div className="leading-tight">
+              <span className="block font-serif text-xl font-bold tracking-tight text-[#102A43]">citiEtrust BANK</span>
+              <span className="block text-[10px] font-serif uppercase tracking-[0.22em] text-[#9E7D2B]">
+                Heritage Trust & Institutional Treasury
+              </span>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-3.5 py-1.5 font-serif text-xs font-semibold text-[#102A43] hover:bg-[#FAF8F5] transition"
+            >
+              <Lock className="h-3.5 w-3.5 text-[#9E7D2B]" /> Admin Triage Dashboard
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Strip */}
+      <section className="border-b border-[#E3DCCE] bg-gradient-to-b from-[#102A43] to-[#16385C] py-8 px-6 text-[#FBF9F5]">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-serif font-bold uppercase tracking-[0.2em] text-[#E6C663]">
+                <KeyRound className="h-3.5 w-3.5" /> Secure Guided Transfer Service
+              </span>
+              <h1 className="mt-1 font-serif text-3xl sm:text-4xl font-bold tracking-tight">
+                Transfer & Wire Funds
+              </h1>
+              <p className="mt-1.5 text-xs sm:text-sm text-slate-300 max-w-xl">
+                Initiate authenticated Domestic (Fedwire / ACH) or International (SWIFT GPI) fund transfers with mandatory multi-factor email confirmation and officer compliance review.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-xl border border-[#D4AF37]/30 bg-[#102A43]/80 p-3 text-xs">
+              <ShieldCheck className="h-5 w-5 text-[#E6C663] shrink-0" />
+              <div>
+                <p className="font-serif font-bold text-[#E6C663]">Dual-Control Security Policy</p>
+                <p className="text-[11px] text-slate-300">Transfers are submitted as Pending Review. No automated execution.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Stepper Indicator */}
+          <div className="mt-8 grid grid-cols-4 gap-2 text-xs font-serif">
+            {[
+              { num: 1, label: "Transfer Details" },
+              { num: 2, label: "Review & Breakdown" },
+              { num: 3, label: "Email Passkey (MFA)" },
+              { num: 4, label: "Confirmation Receipt" },
+            ].map((s) => {
+              const isActive = currentStep === s.num;
+              const isPassed = currentStep > s.num;
+              return (
+                <div
+                  key={s.num}
+                  className={`rounded-lg p-2.5 transition border ${
+                    isActive
+                      ? "border-[#E6C663] bg-[#E6C663]/15 text-[#E6C663] font-bold"
+                      : isPassed
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
+                      : "border-slate-700 bg-slate-900/40 text-slate-400"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`grid h-5 w-5 place-items-center rounded-full text-[10px] font-bold ${
+                        isActive
+                          ? "bg-[#E6C663] text-[#102A43]"
+                          : isPassed
+                          ? "bg-emerald-400 text-slate-950"
+                          : "bg-slate-700 text-slate-300"
+                      }`}
+                    >
+                      {isPassed ? "✓" : s.num}
+                    </span>
+                    <span className="hidden sm:inline tracking-wider uppercase text-[11px]">{s.label}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Area */}
+      <main className="flex-1 py-10 px-6">
+        <div className="mx-auto max-w-5xl">
+          {/* STEP 1: GUIDED TRANSFER FORM */}
+          {currentStep === 1 && (
+            <form onSubmit={handleProceedToReview} className="space-y-8 animate-in fade-in duration-300">
+              {/* Type Switcher */}
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-6 shadow-sm">
+                <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                  1. Select Transfer Classification
+                </span>
+                <div className="mt-3 grid sm:grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTransferType("domestic");
+                      setCurrency("USD");
+                    }}
+                    className={`flex items-start gap-4 rounded-xl border p-4 text-left transition ${
+                      transferType === "domestic"
+                        ? "border-[#9E7D2B] bg-[#FAF8F5] ring-2 ring-[#9E7D2B]/30"
+                        : "border-[#E3DCCE] bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-lg shrink-0 ${
+                        transferType === "domestic" ? "bg-[#102A43] text-[#E6C663]" : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <Building2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-serif font-bold text-sm text-[#102A43]">Domestic Transfer</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Transfers within the United States via Federal Reserve Fedwire & ACH networks. Standard Fee: $0.00.
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTransferType("international")}
+                    className={`flex items-start gap-4 rounded-xl border p-4 text-left transition ${
+                      transferType === "international"
+                        ? "border-[#9E7D2B] bg-[#FAF8F5] ring-2 ring-[#9E7D2B]/30"
+                        : "border-[#E3DCCE] bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <div
+                      className={`p-2.5 rounded-lg shrink-0 ${
+                        transferType === "international"
+                          ? "bg-[#102A43] text-[#E6C663]"
+                          : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      <Globe className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-serif font-bold text-sm text-[#102A43]">International Transfer</p>
+                        <span className="rounded bg-[#E6C663]/20 px-1.5 py-0.2 text-[9px] font-bold text-[#9E7D2B] border border-[#9E7D2B]/30">
+                          SWIFT GPI
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Cross-border multi-currency wire transfers with foreign exchange and international compliance clearance. Wire Fee: $35.00.
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Sender Account */}
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-6 shadow-sm space-y-4">
+                <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                  2. Originating Source Account
+                </span>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {accounts.map((acct) => (
+                    <label
+                      key={acct.id}
+                      className={`flex flex-col justify-between rounded-xl border p-4 cursor-pointer transition ${
+                        senderAccountId === acct.id
+                          ? "border-[#102A43] bg-[#FAF8F5] ring-2 ring-[#102A43]/20"
+                          : "border-[#E3DCCE] bg-white hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-serif font-bold text-xs text-[#102A43]">{acct.name}</span>
+                        <input
+                          type="radio"
+                          name="senderAccount"
+                          value={acct.id}
+                          checked={senderAccountId === acct.id}
+                          onChange={() => setSenderAccountId(acct.id)}
+                          className="text-[#102A43] focus:ring-[#9E7D2B]"
+                        />
+                      </div>
+                      <div className="mt-3 flex items-end justify-between text-xs">
+                        <span className="text-muted-foreground font-mono">{acct.accountNumberMasked}</span>
+                        <span className="font-serif font-bold text-[#102A43] text-sm">
+                          ${acct.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                {errors.senderAccount && <p className="text-xs text-red-600 font-medium">{errors.senderAccount}</p>}
+              </div>
+
+              {/* Beneficiary Details */}
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                    3. Beneficiary & Financial Institution
+                  </span>
+                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Masked in receipt
+                  </span>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Recipient Full Legal Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={recipientFullName}
+                      onChange={(e) => setRecipientFullName(e.target.value)}
+                      placeholder="e.g. Jonathan Sterling or Horizon Wealth LLC"
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                    />
+                    {errors.recipientFullName && (
+                      <p className="text-xs text-red-600 mt-1">{errors.recipientFullName}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Recipient Bank Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={recipientBankName}
+                      onChange={(e) => setRecipientBankName(e.target.value)}
+                      placeholder="e.g. JPMorgan Chase, Barclays, or UBS"
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                    />
+                    {errors.recipientBankName && (
+                      <p className="text-xs text-red-600 mt-1">{errors.recipientBankName}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      {transferType === "domestic" ? "Recipient Account Number *" : "Recipient IBAN or Account Number *"}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={accountNumberOrIBAN}
+                      onChange={(e) => setAccountNumberOrIBAN(e.target.value)}
+                      placeholder={transferType === "domestic" ? "e.g. 8920194812" : "e.g. GB29NWBK60161331926819"}
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] font-mono focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                    />
+                    {errors.accountNumberOrIBAN && (
+                      <p className="text-xs text-red-600 mt-1">{errors.accountNumberOrIBAN}</p>
+                    )}
+                  </div>
+
+                  {transferType === "domestic" ? (
+                    <div>
+                      <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                        Confirm Recipient Account Number *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={confirmAccount}
+                        onChange={(e) => setConfirmAccount(e.target.value)}
+                        placeholder="Re-enter account number"
+                        className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] font-mono focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                      />
+                      {errors.confirmAccount && (
+                        <p className="text-xs text-red-600 mt-1">{errors.confirmAccount}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                        SWIFT / BIC Identifier Code *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={bankIdentifierCode}
+                        onChange={(e) => setBankIdentifierCode(e.target.value.toUpperCase())}
+                        placeholder="e.g. BARCGB22XXX or BCGECHGGXXX"
+                        className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] font-mono uppercase focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                      />
+                      {errors.bankIdentifierCode && (
+                        <p className="text-xs text-red-600 mt-1">{errors.bankIdentifierCode}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {transferType === "domestic" && (
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      ABA Routing Transit Number (9 Digits) *
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={9}
+                      required
+                      value={bankIdentifierCode}
+                      onChange={(e) => setBankIdentifierCode(e.target.value.replace(/\D/g, ""))}
+                      placeholder="e.g. 021000021"
+                      className="w-full sm:w-1/2 rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] font-mono focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                    />
+                    {errors.bankIdentifierCode && (
+                      <p className="text-xs text-red-600 mt-1">{errors.bankIdentifierCode}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* International Address Fields (Mandatory for International Wire) */}
+                {transferType === "international" && (
+                  <div className="pt-4 border-t border-[#E3DCCE] space-y-3">
+                    <div className="flex items-center gap-1.5 text-xs font-serif font-semibold text-[#102A43]">
+                      <Info className="h-4 w-4 text-[#9E7D2B]" />
+                      <span>Beneficiary Physical Address (Mandatory for International Wire Settlement)</span>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                          Street Address *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={recipientStreet}
+                          onChange={(e) => setRecipientStreet(e.target.value)}
+                          placeholder="e.g. 17 Quai de l'Île or 25 London Road"
+                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
+                        />
+                        {errors.recipientStreet && <p className="text-xs text-red-600 mt-1">{errors.recipientStreet}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                          City *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={recipientCity}
+                          onChange={(e) => setRecipientCity(e.target.value)}
+                          placeholder="e.g. Geneva, London, Tokyo"
+                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
+                        />
+                        {errors.recipientCity && <p className="text-xs text-red-600 mt-1">{errors.recipientCity}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                          Postal / ZIP Code *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={recipientPostalCode}
+                          onChange={(e) => setRecipientPostalCode(e.target.value)}
+                          placeholder="e.g. 1204 or EC2N 2DB"
+                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
+                        />
+                        {errors.recipientPostalCode && <p className="text-xs text-red-600 mt-1">{errors.recipientPostalCode}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
+                          Destination Country *
+                        </label>
+                        <select
+                          value={recipientCountry}
+                          onChange={(e) => setRecipientCountry(e.target.value)}
+                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
+                        >
+                          <option value="United Kingdom">United Kingdom</option>
+                          <option value="Switzerland">Switzerland</option>
+                          <option value="Germany">Germany</option>
+                          <option value="France">France</option>
+                          <option value="Canada">Canada</option>
+                          <option value="Japan">Japan</option>
+                          <option value="Singapore">Singapore</option>
+                          <option value="Australia">Australia</option>
+                          <option value="Other Non-Sanctioned Jurisdiction">Other Non-Sanctioned Jurisdiction</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Amount & Settlement Purpose */}
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-6 shadow-sm space-y-5">
+                <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                  4. Amount & Purpose
+                </span>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Transfer Principal Amount *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-serif text-slate-400 font-bold text-base">
+                        $
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        required
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] pl-8 pr-3.5 py-2.5 text-base font-serif font-bold text-[#102A43] focus:border-[#102A43] focus:outline-none focus:ring-1 focus:ring-[#102A43]"
+                      />
+                    </div>
+                    {errors.amount && <p className="text-xs text-red-600 mt-1">{errors.amount}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Destination Currency
+                    </label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-sm text-[#102A43] font-semibold"
+                    >
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="EUR">EUR - Euro (€)</option>
+                      <option value="GBP">GBP - British Pound (£)</option>
+                      <option value="CAD">CAD - Canadian Dollar ($)</option>
+                      <option value="CHF">CHF - Swiss Franc (Fr)</option>
+                      <option value="JPY">JPY - Japanese Yen (¥)</option>
+                      <option value="AUD">AUD - Australian Dollar ($)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Transfer Purpose / Classification *
+                    </label>
+                    <select
+                      value={transferPurpose}
+                      onChange={(e) => setTransferPurpose(e.target.value)}
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-xs text-[#102A43]"
+                    >
+                      <option value="Family Living Support & Expenses">Family Living Support & Expenses</option>
+                      <option value="Commercial Vendor / Supplier Invoice">Commercial Vendor / Supplier Invoice</option>
+                      <option value="Property Investment & Escrow Deposit">Property Investment & Escrow Deposit</option>
+                      <option value="Higher Education / Tuition Payment">Higher Education / Tuition Payment</option>
+                      <option value="Securities & Custody Contribution">Securities & Custody Contribution</option>
+                      <option value="Legal & Advisory Professional Fees">Legal & Advisory Professional Fees</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                      Custom Reference Memo (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={customMemo}
+                      onChange={(e) => setCustomMemo(e.target.value)}
+                      placeholder="e.g. Invoice #2026-981 or Fall Semester"
+                      className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2.5 text-xs text-[#102A43]"
+                    />
+                  </div>
+                </div>
+
+                {/* Transfer Timing */}
+                <div className="pt-3 border-t border-[#E3DCCE]">
+                  <label className="block text-xs font-serif font-semibold text-[#102A43] mb-2">
+                    Execution Schedule
+                  </label>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <label
+                      className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-xs ${
+                        transferDateType === "now"
+                          ? "border-[#102A43] bg-[#FAF8F5] font-semibold"
+                          : "border-[#E3DCCE] bg-white text-muted-foreground"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="dateType"
+                        checked={transferDateType === "now"}
+                        onChange={() => setTransferDateType("now")}
+                        className="text-[#102A43]"
+                      />
+                      <span>Immediate Execution (Send Now)</span>
+                    </label>
+
+                    <label
+                      className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer text-xs ${
+                        transferDateType === "scheduled"
+                          ? "border-[#102A43] bg-[#FAF8F5] font-semibold"
+                          : "border-[#E3DCCE] bg-white text-muted-foreground"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="dateType"
+                        checked={transferDateType === "scheduled"}
+                        onChange={() => setTransferDateType("scheduled")}
+                        className="text-[#102A43]"
+                      />
+                      <span>Schedule for Future Date</span>
+                    </label>
+                  </div>
+
+                  {transferDateType === "scheduled" && (
+                    <div className="mt-3">
+                      <input
+                        type="date"
+                        min="2026-10-17"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        className="rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3.5 py-2 text-xs text-[#102A43]"
+                      />
+                      {errors.scheduledDate && <p className="text-xs text-red-600 mt-1">{errors.scheduledDate}</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Submit CTA */}
+              <div className="flex items-center justify-between pt-2">
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-1.5 text-xs font-serif text-[#102A43] hover:underline"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Return to Account Home
+                </Link>
+
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md transition-all hover:bg-[#16385C]"
+                >
+                  Review Transfer Details <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* STEP 2: REVIEW & COST BREAKDOWN */}
+          {currentStep === 2 && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-8 shadow-sm space-y-6">
+                <div className="border-b border-[#E3DCCE] pb-4">
+                  <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                    Institutional Wire Review
+                  </span>
+                  <h2 className="font-serif text-2xl font-bold text-[#102A43] mt-1">
+                    Review & Verify Transfer Information
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Please carefully inspect all originating and beneficiary details. Wire transfers cannot be recalled once dispatched.
+                  </p>
+                </div>
+
+                {/* Summary Grid */}
+                <div className="grid md:grid-cols-2 gap-6 text-xs">
+                  {/* Originating Account */}
+                  <div className="rounded-xl border border-[#E3DCCE] bg-[#FAF8F5] p-5 space-y-3">
+                    <span className="font-serif font-bold uppercase tracking-wider text-[#9E7D2B] text-[10px]">
+                      Originating Account (Debited)
+                    </span>
+                    <div>
+                      <p className="font-serif font-bold text-sm text-[#102A43]">{selectedAccount?.name}</p>
+                      <p className="text-muted-foreground font-mono mt-0.5">{selectedAccount?.accountNumberMasked}</p>
+                    </div>
+                    <div className="pt-2 border-t border-[#E3DCCE] flex justify-between">
+                      <span className="text-muted-foreground">Account Holder:</span>
+                      <span className="font-semibold text-[#102A43]">{selectedAccount?.ownerName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Available Ledger Balance:</span>
+                      <span className="font-semibold text-[#102A43]">
+                        ${selectedAccount?.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Beneficiary Details */}
+                  <div className="rounded-xl border border-[#E3DCCE] bg-[#FAF8F5] p-5 space-y-3">
+                    <span className="font-serif font-bold uppercase tracking-wider text-[#9E7D2B] text-[10px]">
+                      Beneficiary (Credited)
+                    </span>
+                    <div>
+                      <p className="font-serif font-bold text-sm text-[#102A43]">{recipientFullName}</p>
+                      <p className="text-muted-foreground mt-0.5">{recipientBankName}</p>
+                    </div>
+                    <div className="pt-2 border-t border-[#E3DCCE] flex justify-between">
+                      <span className="text-muted-foreground">Account / IBAN:</span>
+                      <span className="font-mono font-semibold text-[#102A43]">{maskAccountNumber(accountNumberOrIBAN)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {transferType === "domestic" ? "Routing Number (ABA):" : "SWIFT/BIC Code:"}
+                      </span>
+                      <span className="font-mono font-semibold text-[#102A43]">{bankIdentifierCode}</span>
+                    </div>
+                    {recipientStreet && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Beneficiary Address:</span>
+                        <span className="font-semibold text-right text-[#102A43]">
+                          {recipientCity}, {recipientCountry}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Financial Ledger & Fees Breakdown */}
+                <div className="rounded-xl border border-[#9E7D2B]/30 bg-[#FFFDF9] p-6 space-y-3">
+                  <span className="font-serif font-bold uppercase tracking-wider text-[#9E7D2B] text-xs">
+                    Settlement & Fee Breakdown
+                  </span>
+                  <div className="divide-y divide-[#E3DCCE] text-xs">
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-muted-foreground">Transfer Principal Amount:</span>
+                      <span className="font-serif font-bold text-[#102A43] text-sm">
+                        {currency} {numAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+
+                    {convertedAmount && (
+                      <div className="py-2.5 flex justify-between text-muted-foreground">
+                        <span>Foreign Exchange Rate:</span>
+                        <span className="font-mono font-semibold text-[#102A43]">
+                          1 USD = {exchangeRate} {currency}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-muted-foreground">Institutional Wire Network Fee:</span>
+                      <span className="font-semibold text-[#102A43]">
+                        {fee === 0 ? "Waived (Member Benefit · $0.00)" : `$${fee.toFixed(2)} USD`}
+                      </span>
+                    </div>
+
+                    <div className="py-2.5 flex justify-between">
+                      <span className="text-muted-foreground">Estimated Delivery Window:</span>
+                      <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                        <Clock className="h-3.5 w-3.5" /> {estimatedDelivery}
+                      </span>
+                    </div>
+
+                    <div className="py-3 flex justify-between items-center text-sm font-serif font-bold text-[#102A43] pt-3">
+                      <span>Total Outflow / Debit from Account:</span>
+                      <span className="text-lg text-[#102A43] font-bold">
+                        ${totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Institutional Compliance Notice */}
+                <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-bold">Required Administrative & Compliance Screening</p>
+                    <p className="text-[11px] leading-relaxed text-amber-800">
+                      Pursuant to Federal Reserve regulations and Bank Secrecy Act / FinCEN guidelines, all outbound electronic fund transfers undergo manual review by an authorized citiEtrust Bank compliance officer. <strong>Transfers are never executed automatically.</strong> Upon entering your one-time email authorization code, this transfer will be submitted as <strong>Pending Review</strong>.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between pt-4 border-t border-[#E3DCCE]">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-5 py-2.5 font-serif text-xs font-semibold text-[#102A43] hover:bg-slate-50 transition"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" /> Edit Information
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleProceedToVerification}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md hover:bg-[#16385C] transition"
+                  >
+                    Proceed to Email Verification (MFA) <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: MULTI-FACTOR AUTHENTICATION (EMAIL OTP) */}
+          {currentStep === 3 && (
+            <div className="max-w-xl mx-auto space-y-6 animate-in fade-in duration-300">
+              {/* Security Simulation Notice Banner */}
+              <div className="rounded-2xl border border-[#9E7D2B]/40 bg-[#102A43] p-5 text-[#FBF9F5] shadow-md space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-[#E6C663]" />
+                    <span className="font-serif font-bold text-xs uppercase tracking-wider text-[#E6C663]">
+                      Email Notification Delivery Simulation
+                    </span>
+                  </div>
+                  <span className="text-[10px] bg-[#E6C663] text-[#102A43] font-bold px-2 py-0.5 rounded-full">
+                    Live Test Sandbox
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  A 6-digit confirmation code was dispatched to the account owner’s registered mail:{" "}
+                  <strong className="text-white">{maskEmail(selectedAccount?.ownerEmail || "")}</strong>.
+                </p>
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-black/40 p-2.5 border border-white/10 font-mono text-xs">
+                  <span className="text-slate-400">citiEtrust Code:</span>
+                  <span className="font-bold text-lg tracking-widest text-[#E6C663]">{simulatedExpectedOtp}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(simulatedExpectedOtp);
+                      setOtpCopied(true);
+                      setTimeout(() => setOtpCopied(false), 2000);
+                    }}
+                    className="flex items-center gap-1 text-[11px] text-slate-300 hover:text-white"
+                  >
+                    <Copy className="h-3.5 w-3.5" /> {otpCopied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              {/* OTP Form Card */}
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-8 shadow-sm space-y-6 text-center">
+                <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-[#102A43] text-[#E6C663] shadow-inner">
+                  <KeyRound className="h-7 w-7" />
+                </div>
+
+                <div>
+                  <h2 className="font-serif text-2xl font-bold text-[#102A43]">
+                    Authorize Outbound Wire Transfer
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                    Please enter the 6-digit authorization passkey sent to{" "}
+                    <strong>{maskEmail(selectedAccount?.ownerEmail || "")}</strong> to authorize this{" "}
+                    <strong>${totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> transfer.
+                  </p>
+                </div>
+
+                <form onSubmit={handleVerifyAndSubmit} className="space-y-5">
+                  <div>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      value={otpCode}
+                      onChange={(e) => {
+                        setOtpCode(e.target.value.replace(/\D/g, ""));
+                        setOtpError("");
+                      }}
+                      placeholder="••••••"
+                      className="w-48 mx-auto text-center rounded-xl border-2 border-[#102A43] bg-[#FFFDF9] py-3 text-2xl font-mono font-bold tracking-[0.4em] text-[#102A43] focus:outline-none focus:ring-4 focus:ring-[#9E7D2B]/30"
+                    />
+                    {otpError && <p className="text-xs text-red-600 mt-2 font-medium">{otpError}</p>}
+                  </div>
+
+                  <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                    {otpCountdown > 0 ? (
+                      <span>Resend code in {otpCountdown}s</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={generateNewOtp}
+                        className="text-[#102A43] font-semibold hover:underline flex items-center gap-1"
+                      >
+                        <RefreshCw className="h-3 w-3" /> Resend One-Time Passcode
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="pt-2 flex flex-col gap-3">
+                    <button
+                      type="submit"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] py-3.5 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md hover:bg-[#16385C] transition"
+                    >
+                      <ShieldCheck className="h-4 w-4 text-[#E6C663]" /> Confirm & Submit Transfer Request
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(2)}
+                      className="text-xs font-serif text-muted-foreground hover:text-[#102A43] hover:underline"
+                    >
+                      Cancel and Return to Review
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: CONFIRMATION & RECEIPT */}
+          {currentStep === 4 && completedTransfer && (
+            <div className="space-y-8 animate-in fade-in duration-300">
+              <div className="rounded-2xl border border-[#E3DCCE] bg-white p-8 shadow-sm space-y-6">
+                {/* Header Banner */}
+                <div className="text-center space-y-2 border-b border-[#E3DCCE] pb-6">
+                  <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-amber-100 text-amber-800">
+                    <Clock className="h-8 w-8 text-amber-700 animate-pulse" />
+                  </div>
+                  <span className="inline-block rounded-full bg-amber-100 px-3.5 py-1 text-xs font-serif font-bold text-amber-800 border border-amber-300">
+                    Status: PENDING REVIEW
+                  </span>
+                  <h2 className="font-serif text-3xl font-bold text-[#102A43]">
+                    Transfer Request Submitted for Review
+                  </h2>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    Your transfer has been authenticated and routed to the citiEtrust Bank underwriting team. As an institutional safety requirement, transfers are never completed automatically.
+                  </p>
+                </div>
+
+                {/* Reference Card */}
+                <div className="rounded-xl border border-[#9E7D2B]/30 bg-[#FAF8F5] p-5 flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                      Official Wire Tracking Reference Number
+                    </span>
+                    <p className="font-mono text-xl font-bold text-[#102A43] tracking-wide mt-0.5">
+                      {completedTransfer.referenceNumber}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Submitted on {new Date(completedTransfer.createdAt).toLocaleString()} · MFA Verified via{" "}
+                      {completedTransfer.verificationEmail}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => downloadTransferReceipt(completedTransfer)}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-4 py-2 font-serif text-xs font-semibold text-[#102A43] hover:bg-[#FAF8F5] shadow-xs transition"
+                    >
+                      <Download className="h-3.5 w-3.5 text-[#9E7D2B]" /> Download Official Receipt (.txt)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Transaction Summary Grid */}
+                <div className="grid sm:grid-cols-3 gap-4 text-xs">
+                  <div className="rounded-xl border border-[#E3DCCE] p-4 bg-[#FFFDF9] space-y-1">
+                    <span className="text-muted-foreground">Debited Account</span>
+                    <p className="font-serif font-bold text-[#102A43]">{completedTransfer.senderAccount.name}</p>
+                    <p className="font-mono text-muted-foreground">{completedTransfer.senderAccount.accountNumberMasked}</p>
+                  </div>
+
+                  <div className="rounded-xl border border-[#E3DCCE] p-4 bg-[#FFFDF9] space-y-1">
+                    <span className="text-muted-foreground">Beneficiary Name</span>
+                    <p className="font-serif font-bold text-[#102A43]">{completedTransfer.recipientFullName}</p>
+                    <p className="text-muted-foreground">{completedTransfer.recipientBankName}</p>
+                  </div>
+
+                  <div className="rounded-xl border border-[#E3DCCE] p-4 bg-[#FFFDF9] space-y-1">
+                    <span className="text-muted-foreground">Total Outflow & Type</span>
+                    <p className="font-serif font-bold text-[#102A43] text-sm">
+                      ${completedTransfer.totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD
+                    </p>
+                    <p className="text-muted-foreground uppercase text-[10px] font-bold">
+                      {completedTransfer.type} Wire · Fee: ${completedTransfer.fee.toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Security and Next Steps Info */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-2 text-xs text-slate-700">
+                  <p className="font-serif font-bold text-[#102A43]">What happens next?</p>
+                  <ul className="space-y-1.5 text-slate-600 list-disc list-inside">
+                    <li>An authorized compliance officer will inspect the beneficiary against OFAC and sanctions watchlists.</li>
+                    <li>Estimated settlement: <strong>{completedTransfer.estimatedDelivery}</strong> upon officer release.</li>
+                    <li>You can monitor live status changes or officer queries at any time.</li>
+                  </ul>
+                </div>
+
+                {/* Bottom Navigation */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#E3DCCE]">
+                  <button
+                    type="button"
+                    onClick={handleStartNewTransfer}
+                    className="inline-flex items-center gap-1.5 font-serif text-xs font-semibold text-[#102A43] hover:underline"
+                  >
+                    Initiate Another Transfer
+                  </button>
+
+                  <div className="flex items-center gap-3">
+                    <Link
+                      to="/admin"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-[#9E7D2B] bg-[#102A43] px-5 py-2.5 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] transition shadow-xs"
+                    >
+                      <Lock className="h-3.5 w-3.5 text-[#E6C663]" /> View in Admin Queue →
+                    </Link>
+
+                    <Link
+                      to="/"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-5 py-2.5 font-serif text-xs font-semibold text-[#102A43] hover:bg-[#FAF8F5] transition"
+                    >
+                      Return to Bank Home
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* RECENT TRANSFERS OVERVIEW */}
+          <section className="mt-16 rounded-2xl border border-[#E3DCCE] bg-white p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E3DCCE] pb-3">
+              <div>
+                <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                  Live Ledger Activity
+                </span>
+                <h3 className="font-serif text-lg font-bold text-[#102A43]">Recent Outbound Transfer Requests</h3>
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">
+                Showing {transfers.length} registered wire entries
+              </span>
+            </div>
+
+            <div className="divide-y divide-[#E3DCCE] text-xs">
+              {transfers.slice(0, 5).map((trf) => (
+                <div key={trf.id} className="py-3.5 flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-[#102A43]">{trf.referenceNumber}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-serif font-bold border ${
+                          trf.status === "Pending Review"
+                            ? "bg-amber-100 text-amber-800 border-amber-300"
+                            : trf.status === "Approved"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : trf.status === "Flagged for AML/Compliance"
+                            ? "bg-purple-100 text-purple-800 border-purple-300"
+                            : trf.status === "Information Requested"
+                            ? "bg-blue-100 text-blue-800 border-blue-300"
+                            : "bg-red-100 text-red-800 border-red-300"
+                        }`}
+                      >
+                        {trf.status}
+                      </span>
+                      <span className="uppercase text-[10px] font-bold text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
+                        {trf.type}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground">
+                      To: <strong className="text-[#102A43]">{trf.recipientFullName}</strong> ({trf.recipientBankName})
+                      · From: {trf.senderAccount.name}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="font-serif font-bold text-[#102A43] text-sm block">
+                        ${trf.totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD
+                      </span>
+                      <span className="text-[11px] text-muted-foreground">
+                        {new Date(trf.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => downloadTransferReceipt(trf)}
+                      title="Download receipt"
+                      className="p-1.5 rounded-lg border border-[#D5CEBF] hover:bg-[#FAF8F5] text-[#102A43]"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#E3DCCE] bg-[#102A43] text-[#FBF9F5]/70 py-8 px-6 text-xs">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© 2026 citiEtrust Bank, N.A. Chartered 1952. Federally Insured by NCUA.</p>
+          <div className="flex items-center gap-4 text-[#E6C663]">
+            <Link to="/transfers" className="hover:underline">Transfers</Link>
+            <span>·</span>
+            <Link to="/admin" className="hover:underline">Staff Administration Portal</Link>
+            <span>·</span>
+            <Link to="/" className="hover:underline">Home</Link>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

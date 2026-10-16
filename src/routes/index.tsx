@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ShieldCheck,
   Zap,
@@ -34,6 +34,7 @@ import {
   Landmark,
   Scale,
   Users,
+  Globe,
 } from "lucide-react";
 import heroAsset from "@/assets/hero-boardroom.jpg.asset.json";
 import m1 from "@/assets/member-1.jpg";
@@ -46,17 +47,17 @@ const hero = heroAsset.url;
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trustora Credit Union — A Traditional Member-Owned Financial Cooperative" },
+      { title: "citiEtrust Bank — Traditional & Private Institutional Banking" },
       {
         name: "description",
         content:
-          "Member-owned since 1952. Traditional checking, high-yield savings, mortgages, and honest dividends backed by the full faith and credit of the NCUA.",
+          "Member-owned since 1952. Traditional checking, high-yield savings, domestic & international wire transfers, and honest dividends backed by the full faith and credit of the NCUA.",
       },
-      { property: "og:title", content: "Trustora Credit Union — A Traditional Financial Cooperative" },
+      { property: "og:title", content: "citiEtrust Bank — Traditional & Private Institutional Banking" },
       {
-        property: "og:description",
+        name: "description",
         content:
-          "Not for profit, but for service. Federally insured by the NCUA up to $250,000. Open a membership account in minutes.",
+          "Secure banking with Fedwire domestic and SWIFT international transfers, insured by the NCUA up to $250,000.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -77,7 +78,7 @@ const eyebrow =
 
 function Logo({ light = false }: { light?: boolean }) {
   return (
-    <a href="/" className="flex items-center gap-3" aria-label="Trustora Credit Union home">
+    <a href="/" className="flex items-center gap-3" aria-label="citiEtrust Bank home">
       {/* Old School Engraved Seal Icon */}
       <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D4AF37]/60 bg-[#102A43] shadow-inner">
         <Landmark className="h-6 w-6 text-[#E6C663]" />
@@ -86,13 +87,13 @@ function Logo({ light = false }: { light?: boolean }) {
         </span>
       </span>
       <span className={`leading-tight ${light ? "text-[#FBF9F5]" : "text-[#102A43]"}`}>
-        <span className="block font-serif text-xl font-bold tracking-tight">TRUSTORA</span>
+        <span className="block font-serif text-xl font-bold tracking-tight">citiEtrust BANK</span>
         <span
           className={`block text-[10px] font-serif uppercase tracking-[0.22em] ${
             light ? "text-[#E6C663]" : "text-[#9E7D2B]"
           }`}
         >
-          Credit Union · Est. 1952
+          Heritage Trust & Private Banking · Est. 1952
         </span>
       </span>
     </a>
@@ -108,20 +109,27 @@ function HeritageTopTicker() {
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 text-[11px] sm:text-xs">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className="flex items-center gap-1.5 font-serif font-semibold text-[#E6C663]">
-            <ShieldCheck className="h-3.5 w-3.5 text-[#E6C663]" /> CHARTERED 1952 · MEMBER OWNED
+            <ShieldCheck className="h-3.5 w-3.5 text-[#E6C663]" /> citiEtrust BANK · CHARTERED 1952 · FEDERALLY INSURED
           </span>
           <span className="hidden text-slate-400 sm:inline">|</span>
-          <span className="text-slate-300">FEDERALLY INSURED BY NCUA TO $250,000</span>
+          <span className="text-slate-300">NCUA COVERAGE TO $250,000</span>
           <span className="hidden text-slate-400 md:inline">|</span>
           <span className="hidden text-slate-300 md:inline">ROUTING # 071922841</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="rounded bg-[#16385C] px-2 py-0.5 font-mono text-[11px] text-[#E6C663] border border-[#D4AF37]/30">
-            6-MO CERTIFICATE: 5.15% APY
-          </span>
-          <span className="hidden sm:inline text-slate-300">
-            MEMBER SAVINGS: 4.10% APY
-          </span>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/transfers"
+            className="text-[#E6C663] hover:underline font-serif font-semibold flex items-center gap-1"
+          >
+            <Globe className="h-3 w-3" /> Guided Wire Transfers
+          </Link>
+          <span className="text-slate-400">|</span>
+          <Link
+            to="/admin"
+            className="text-slate-300 hover:text-white transition font-serif flex items-center gap-1"
+          >
+            <Lock className="h-2.5 w-2.5 text-[#E6C663]" /> Staff Admin
+          </Link>
         </div>
       </div>
     </aside>
@@ -129,36 +137,59 @@ function HeritageTopTicker() {
 }
 
 function Nav({ onOpenAccount }: { onOpenAccount: () => void }) {
-  const links = [
-    { label: "Accounts & Savings", href: "#products" },
-    { label: "Loan Rates", href: "#rates-board" },
-    { label: "Cooperative Principles", href: "#cooperative" },
-    { label: "Archival Stories", href: "#stories" },
-    { label: "Member Support", href: "#support" },
-  ];
   return (
     <header className="sticky top-0 z-40 border-b border-[#E3DCCE] bg-[#FAF8F5]/95 backdrop-blur-md">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4" aria-label="Main">
         <Logo />
         <ul className="hidden items-center gap-7 lg:flex">
-          {links.map((l) => (
-            <li key={l.label}>
-              <a
-                href={l.href}
-                className="font-serif text-xs font-semibold uppercase tracking-wider text-[#102A43]/80 transition hover:text-[#102A43] hover:underline"
-              >
-                {l.label}
-              </a>
-            </li>
-          ))}
+          <li>
+            <a
+              href="#products"
+              className="font-serif text-xs font-semibold uppercase tracking-wider text-[#102A43]/80 transition hover:text-[#102A43] hover:underline"
+            >
+              Accounts & Savings
+            </a>
+          </li>
+          <li>
+            <Link
+              to="/transfers"
+              className="inline-flex items-center gap-1 font-serif text-xs font-bold uppercase tracking-wider text-[#9E7D2B] transition hover:text-[#102A43] hover:underline"
+            >
+              <Globe className="h-3.5 w-3.5" /> Wire & Transfers
+            </Link>
+          </li>
+          <li>
+            <a
+              href="#rates-board"
+              className="font-serif text-xs font-semibold uppercase tracking-wider text-[#102A43]/80 transition hover:text-[#102A43] hover:underline"
+            >
+              Loan Rates
+            </a>
+          </li>
+          <li>
+            <a
+              href="#cooperative"
+              className="font-serif text-xs font-semibold uppercase tracking-wider text-[#102A43]/80 transition hover:text-[#102A43] hover:underline"
+            >
+              Principles
+            </a>
+          </li>
+          <li>
+            <a
+              href="#support"
+              className="font-serif text-xs font-semibold uppercase tracking-wider text-[#102A43]/80 transition hover:text-[#102A43] hover:underline"
+            >
+              Member Support
+            </a>
+          </li>
         </ul>
         <div className="flex items-center gap-3">
-          <a
-            href="#support"
-            className="hidden rounded px-3 py-1.5 font-serif text-xs font-medium text-[#102A43] hover:bg-[#F2ECE1] sm:inline-flex items-center gap-1.5"
+          <Link
+            to="/transfers"
+            className="hidden rounded px-3 py-1.5 font-serif text-xs font-medium text-[#102A43] hover:bg-[#F2ECE1] sm:inline-flex items-center gap-1.5 border border-[#D5CEBF]"
           >
-            <Lock className="h-3.5 w-3.5 text-[#9E7D2B]" /> Member Sign In
-          </a>
+            <Globe className="h-3.5 w-3.5 text-[#9E7D2B]" /> Send Money
+          </Link>
           <button
             type="button"
             onClick={onOpenAccount}
@@ -250,6 +281,13 @@ function AccountCard() {
           credit on November 1st.
         </p>
       </div>
+
+      <Link
+        to="/transfers"
+        className="mt-3 flex items-center justify-center gap-1.5 w-full rounded-md border border-[#102A43] bg-[#102A43] py-2 text-xs font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C] transition shadow-xs"
+      >
+        <Globe className="h-3.5 w-3.5 text-[#E6C663]" /> Guided Wire Transfers →
+      </Link>
     </div>
   );
 }
@@ -267,9 +305,9 @@ function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
             <span className="italic text-[#9E7D2B]">Never for profit.</span>
           </h1>
           <p className="mt-6 max-w-xl font-serif text-base leading-relaxed text-[#334E68] sm:text-lg">
-            For more than 70 years, Trustora Credit Union has stood on timeless banking virtues:
-            sovereign member governance, honest dividend returns, zero predatory fees, and branch
-            counselors who know your family by name.
+            For more than 70 years, citiEtrust Bank has stood on timeless banking virtues:
+            sovereign member governance, honest dividend returns, zero predatory fees, domestic Fedwire
+            and international SWIFT transfers, and counselors who know your family by name.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -280,6 +318,9 @@ function Hero({ onOpenAccount }: { onOpenAccount: () => void }) {
             >
               <ShieldCheck className="h-4 w-4 text-[#102A43]" /> Open an Account
             </button>
+            <Link to="/transfers" className={btnPrimary}>
+              <Globe className="h-4 w-4 text-[#E6C663]" /> Send Wire / Transfer
+            </Link>
             <a href="#rates-board" className={btnGhost}>
               View Current Rates Board <ArrowRight className="h-4 w-4 text-[#9E7D2B]" />
             </a>
@@ -775,13 +816,19 @@ function Footer({ onOpenAccount }: { onOpenAccount: () => void }) {
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-6">
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-slate-400">
+              <Link to="/transfers" className="text-[#E6C663] hover:underline font-semibold">
+                Domestic & International Transfers
+              </Link>
+              <Link to="/admin" className="text-slate-300 hover:text-white">
+                Admin Console
+              </Link>
               <a href="#" className="hover:text-white">Privacy Policy</a>
               <a href="#" className="hover:text-white">Truth-in-Savings Disclosures</a>
               <a href="#" className="hover:text-white">Fee Schedule</a>
               <a href="#" className="hover:text-white">Electronic Communications E-Sign</a>
               <a href="#" className="hover:text-white">Accessibility</a>
             </div>
-            <span>© 1952–2026 Trustora Credit Union. All rights reserved.</span>
+            <span>© 1952–2026 citiEtrust Bank, N.A. All rights reserved.</span>
           </div>
         </div>
       </div>
