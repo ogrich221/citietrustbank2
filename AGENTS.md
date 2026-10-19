@@ -9,3 +9,6 @@
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
 - tsconfig keeps noPropertyAccessFromIndexSignature, noUncheckedIndexedAccess and exactOptionalPropertyTypes off — existing transfer/portal code relies on looser typing.
+- Wire address fields and required-address validation are shared across both transfer entry points to keep recipient-bank details consistent; older demo records may omit addresses.
+- Banking workspace pages are explicitly demonstrations, not live banking or secure staff access; do not treat browser profile selection as authorization.
+- Use the shared back control for workspace navigation so backward steps retain form details and display the bank watermark.

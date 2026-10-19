@@ -1,5 +1,7 @@
 # Roadmap
 
+- [ ] Keep homepage layout unchanged; await the new hero/color reference (no image accompanied the latest message)
+
 - [ ] Complete domestic and international wire details in both transfer entry points
 - [ ] Upper-left back navigation and faint bank logo
 - [ ] Improve member overview and admin setup/review dashboard
