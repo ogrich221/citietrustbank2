@@ -28,6 +28,8 @@ import bankBuilding from "@/assets/bank-building.jpg";
 import m1 from "@/assets/member-1.jpg";
 import m2 from "@/assets/member-2.jpg";
 import m3 from "@/assets/member-3.jpg";
+import boardroomAsset from "@/assets/hero-boardroom.jpg.asset.json";
+import teamDocsAsset from "@/assets/team-documents.jpg.asset.json";
 import { OpenAccountModal } from "@/components/open-account-modal";
 import { MemberPortalModal } from "@/components/member-portal-modal";
 
@@ -162,17 +164,18 @@ function AppCard() {
 
 function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOpenPortal: () => void }) {
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative flex min-h-[calc(100svh-4.5rem)] items-center overflow-hidden">
       <img
         src={bankBuilding}
         alt=""
         aria-hidden="true"
         width={1600}
         height={912}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.22]"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 pb-24 pt-16 lg:grid-cols-[1.15fr_1fr] lg:pt-24">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy via-navy/90 to-navy/45" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background" />
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-[1.15fr_1fr]">
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           <span className={eyebrow}>
             <Zap className="h-3.5 w-3.5" /> New: 4.10% APY high-yield savings
@@ -307,8 +310,8 @@ function Why() {
   return (
     <section id="why" className="mx-auto max-w-7xl px-6 py-24">
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-        <div className="overflow-hidden rounded-3xl shadow-lift">
-          <img src={bankBuilding} alt="citiEtrust Bank branch exterior" loading="lazy" width={1600} height={912} className="h-full w-full object-cover" />
+        <div className="overflow-hidden rounded-3xl border border-border/60 shadow-lift">
+          <img src={boardroomAsset.url} alt="citiEtrust advisers meeting with members around a conference table" loading="lazy" width={736} height={981} className="h-full w-full object-cover" />
         </div>
         <div>
           <span className={eyebrow}>Why citiEtrust</span>
@@ -366,12 +369,18 @@ function Stories() {
 function CTA({ onOpenAccount }: { onOpenAccount: () => void }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-24">
-      <div className="relative overflow-hidden rounded-[2rem] bg-gold-gradient px-8 py-16 text-center text-primary-foreground">
-        <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Open your account in 5 minutes.</h2>
-        <p className="mx-auto mt-4 max-w-xl opacity-90">No paperwork, no branch visit, no minimum deposit.</p>
-        <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-card px-7 py-3.5 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
-          Get started <ArrowRight className="h-4 w-4" />
-        </button>
+      <div className="relative grid overflow-hidden rounded-[2rem] bg-gold-gradient text-primary-foreground lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="px-8 py-16 text-center lg:px-14 lg:py-20 lg:text-left">
+          <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Open your account in 5 minutes.</h2>
+          <p className="mx-auto mt-4 max-w-xl opacity-90 lg:mx-0">No paperwork, no branch visit, no minimum deposit.</p>
+          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-card px-7 py-3.5 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
+            Get started <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="relative min-h-[20rem]">
+          <img src={teamDocsAsset.url} alt="citiEtrust members reviewing paperwork with a bank adviser" loading="lazy" width={736} height={981} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/45 to-transparent" />
+        </div>
       </div>
     </section>
   );
