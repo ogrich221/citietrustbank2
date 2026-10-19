@@ -57,6 +57,7 @@ export interface BankTransfer {
   currency: string;
   transferPurpose: string;
   recipientAddress?: RecipientAddress;
+  recipientBankAddress?: RecipientAddress;
   transferDateType: "now" | "scheduled";
   scheduledDate?: string;
   fee: number;
@@ -562,6 +563,7 @@ Routing Number (ABA)  : 071922841
 ------------------------------------------------------------------------
 Beneficiary Name      : ${trf.recipientFullName}
 Beneficiary Bank      : ${trf.recipientBankName}
+Bank Address          : ${trf.recipientBankAddress ? [trf.recipientBankAddress.street, trf.recipientBankAddress.city, trf.recipientBankAddress.stateOrProvince, trf.recipientBankAddress.postalCode, trf.recipientBankAddress.country].filter(Boolean).join(", ") : "Not provided on older request"}
 Account / IBAN        : ${trf.accountNumberMasked}
 Bank Identifier       : ${trf.bankIdentifierType.toUpperCase()} ${trf.bankIdentifierCode}
 ${trf.recipientAddress ? `Beneficiary Address   : ${trf.recipientAddress.street}, ${trf.recipientAddress.city}, ${trf.recipientAddress.country} ${trf.recipientAddress.postalCode}\n` : ""}Purpose / Memo        : ${trf.transferPurpose}

@@ -1,3 +1,7 @@
+import { WireAddressFields } from "@/components/wire-address-fields";
+import { BankBackButton } from "@/components/bank-back-button";
+import { emptyWireAddress, validateWireAddresses, formatWireAddress } from "@/lib/wire-details";
+import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useTransfers } from "@/hooks/use-transfers";
@@ -39,6 +43,10 @@ export const Route = createFileRoute("/transfers")({
   head: () => ({
     meta: [
       { title: "Wire & Electronic Transfers | citiEtrust Bank" },
+      { property: "og:title", content: "Wire Transfers | citiEtrust Bank" },
+      { property: "og:description", content: "Prepare a domestic or international wire request with full recipient and bank details." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         name: "description",
         content:
@@ -81,11 +89,8 @@ function TransfersPage() {
   const [transferDateType, setTransferDateType] = useState<"now" | "scheduled">("now");
   const [scheduledDate, setScheduledDate] = useState<string>("2026-10-25");
 
-  // International Address (Mandatory for International Wire)
-  const [recipientStreet, setRecipientStreet] = useState("");
-  const [recipientCity, setRecipientCity] = useState("");
-  const [recipientPostalCode, setRecipientPostalCode] = useState("");
-  const [recipientCountry, setRecipientCountry] = useState("United Kingdom");
+  const [recipientAddress, setRecipientAddress] = useState(emptyWireAddress);
+  const [recipientBankAddress, setRecipientBankAddress] = useState(emptyWireAddress);
 
   // Validation Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -198,12 +203,7 @@ function TransfersPage() {
       errs.amount = `Insufficient ledger funds. Available: $${selectedAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
     }
 
-    if (transferType === "international") {
-      if (!recipientStreet.trim()) errs.recipientStreet = "Recipient physical street address is required for international SWIFT wires.";
-      if (!recipientCity.trim()) errs.recipientCity = "Recipient city is required.";
-      if (!recipientPostalCode.trim()) errs.recipientPostalCode = "Postal / ZIP code is required.";
-      if (!recipientCountry.trim()) errs.recipientCountry = "Destination country is required.";
-    }
+    Object.assign(errs, validateWireAddresses(recipientAddress, recipientBankAddress));
 
     if (transferDateType === "scheduled" && !scheduledDate) {
       errs.scheduledDate = "Please pick a future execution date.";
@@ -262,15 +262,8 @@ function TransfersPage() {
       amount: numAmount,
       currency,
       transferPurpose: customMemo.trim() ? `${transferPurpose} — ${customMemo.trim()}` : transferPurpose,
-      recipientAddress:
-        transferType === "international"
-          ? {
-              street: recipientStreet.trim(),
-              city: recipientCity.trim(),
-              postalCode: recipientPostalCode.trim(),
-              country: recipientCountry.trim(),
-            }
-          : undefined,
+      recipientAddress,
+      recipientBankAddress,
       transferDateType,
       scheduledDate: transferDateType === "scheduled" ? scheduledDate : undefined,
       fee,
@@ -298,15 +291,14 @@ function TransfersPage() {
     setBankIdentifierCode("");
     setAmount("5000");
     setCustomMemo("");
-    setRecipientStreet("");
-    setRecipientCity("");
-    setRecipientPostalCode("");
+    setRecipientAddress(emptyWireAddress());
+    setRecipientBankAddress(emptyWireAddress());
     setErrors({});
     setCompletedTransfer(null);
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#102A43] font-sans antialiased flex flex-col">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#102A43] font-sans antialiased flex flex-col banking-workspace">
       {/* Top Heritage Trust Banner */}
       <aside className="border-b border-[#E3DCCE] bg-[#102A43] py-2 text-xs text-[#FBF9F5]">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 text-[11px] sm:text-xs">
@@ -332,6 +324,7 @@ function TransfersPage() {
       {/* Main Header */}
       <header className="sticky top-0 z-30 border-b border-[#E3DCCE] bg-[#FAF8F5]/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-2 min-w-0"><BankBackButton onBack={currentStep > 1 ? () => { setCurrentStep(currentStep === 3 ? 2 : 1); window.scrollTo({ top: 0 }); } : undefined} />
           <Link to="/" className="flex items-center gap-3">
             <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D4AF37]/60 bg-[#102A43] shadow-inner">
               <Landmark className="h-6 w-6 text-[#E6C663]" />
@@ -345,7 +338,7 @@ function TransfersPage() {
                 Heritage Trust & Institutional Treasury
               </span>
             </div>
-          </Link>
+          </Link></div>
 
           <div className="flex items-center gap-3">
             <Link
@@ -425,6 +418,8 @@ function TransfersPage() {
         </div>
       </section>
 
+      <p className="mx-auto max-w-5xl px-6 pt-4 text-sm text-gold">Demonstration only — no money is moved and no verification email is sent.</p>
+
       {/* Main Content Area */}
       <main className="flex-1 py-10 px-6">
         <div className="mx-auto max-w-5xl">
@@ -437,7 +432,7 @@ function TransfersPage() {
                   1. Select Transfer Classification
                 </span>
                 <div className="mt-3 grid sm:grid-cols-2 gap-4">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setTransferType("domestic");
@@ -462,9 +457,9 @@ function TransfersPage() {
                         Transfers within the United States via Federal Reserve Fedwire & ACH networks. Standard Fee: $0.00.
                       </p>
                     </div>
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setTransferType("international")}
                     className={`flex items-start gap-4 rounded-xl border p-4 text-left transition ${
@@ -493,7 +488,7 @@ function TransfersPage() {
                         Cross-border multi-currency wire transfers with foreign exchange and international compliance clearance. Wire Fee: $35.00.
                       </p>
                     </div>
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -657,85 +652,9 @@ function TransfersPage() {
                   </div>
                 )}
 
-                {/* International Address Fields (Mandatory for International Wire) */}
-                {transferType === "international" && (
-                  <div className="pt-4 border-t border-[#E3DCCE] space-y-3">
-                    <div className="flex items-center gap-1.5 text-xs font-serif font-semibold text-[#102A43]">
-                      <Info className="h-4 w-4 text-[#9E7D2B]" />
-                      <span>Beneficiary Physical Address (Mandatory for International Wire Settlement)</span>
-                    </div>
+                  <WireAddressFields title="Recipient address" prefix="recipient" value={recipientAddress} onChange={setRecipientAddress} errors={errors} />
+                  <WireAddressFields title="Recipient bank address" prefix="bank" value={recipientBankAddress} onChange={setRecipientBankAddress} errors={errors} />
 
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          Street Address *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={recipientStreet}
-                          onChange={(e) => setRecipientStreet(e.target.value)}
-                          placeholder="e.g. 17 Quai de l'Île or 25 London Road"
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
-                        />
-                        {errors.recipientStreet && <p className="text-xs text-red-600 mt-1">{errors.recipientStreet}</p>}
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          City *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={recipientCity}
-                          onChange={(e) => setRecipientCity(e.target.value)}
-                          placeholder="e.g. Geneva, London, Tokyo"
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
-                        />
-                        {errors.recipientCity && <p className="text-xs text-red-600 mt-1">{errors.recipientCity}</p>}
-                      </div>
-                    </div>
-
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          Postal / ZIP Code *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={recipientPostalCode}
-                          onChange={(e) => setRecipientPostalCode(e.target.value)}
-                          placeholder="e.g. 1204 or EC2N 2DB"
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
-                        />
-                        {errors.recipientPostalCode && <p className="text-xs text-red-600 mt-1">{errors.recipientPostalCode}</p>}
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
-                          Destination Country *
-                        </label>
-                        <select
-                          value={recipientCountry}
-                          onChange={(e) => setRecipientCountry(e.target.value)}
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-[#FFFDF9] px-3 py-2 text-xs text-[#102A43]"
-                        >
-                          <option value="United Kingdom">United Kingdom</option>
-                          <option value="Switzerland">Switzerland</option>
-                          <option value="Germany">Germany</option>
-                          <option value="France">France</option>
-                          <option value="Canada">Canada</option>
-                          <option value="Japan">Japan</option>
-                          <option value="Singapore">Singapore</option>
-                          <option value="Australia">Australia</option>
-                          <option value="Other Non-Sanctioned Jurisdiction">Other Non-Sanctioned Jurisdiction</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Amount & Settlement Purpose */}
@@ -885,12 +804,12 @@ function TransfersPage() {
                   <ArrowLeft className="h-3.5 w-3.5" /> Return to Account Home
                 </Link>
 
-                <button
+                <Button
                   type="submit"
                   className="inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md transition-all hover:bg-[#16385C]"
                 >
                   Review Transfer Details <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -953,14 +872,8 @@ function TransfersPage() {
                       </span>
                       <span className="font-mono font-semibold text-[#102A43]">{bankIdentifierCode}</span>
                     </div>
-                    {recipientStreet && (
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Beneficiary Address:</span>
-                        <span className="font-semibold text-right text-[#102A43]">
-                          {recipientCity}, {recipientCountry}
-                        </span>
-                      </div>
-                    )}
+                    <p className="text-xs text-muted-foreground">Recipient address: {formatWireAddress(recipientAddress)}</p>
+                    <p className="text-xs text-muted-foreground">Bank address: {formatWireAddress(recipientBankAddress)}</p>
                   </div>
                 </div>
 
@@ -1022,21 +935,21 @@ function TransfersPage() {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-4 border-t border-[#E3DCCE]">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setCurrentStep(1)}
                     className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-5 py-2.5 font-serif text-xs font-semibold text-[#102A43] hover:bg-slate-50 transition"
                   >
                     <ArrowLeft className="h-3.5 w-3.5" /> Edit Information
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
                     onClick={handleProceedToVerification}
                     className="inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] px-7 py-3 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md hover:bg-[#16385C] transition"
                   >
                     Proceed to Email Verification (MFA) <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -1065,7 +978,7 @@ function TransfersPage() {
                 <div className="mt-2 flex items-center justify-between rounded-lg bg-black/40 p-2.5 border border-white/10 font-mono text-xs">
                   <span className="text-slate-400">citiEtrust Code:</span>
                   <span className="font-bold text-lg tracking-widest text-[#E6C663]">{simulatedExpectedOtp}</span>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(simulatedExpectedOtp);
@@ -1075,7 +988,7 @@ function TransfersPage() {
                     className="flex items-center gap-1 text-[11px] text-slate-300 hover:text-white"
                   >
                     <Copy className="h-3.5 w-3.5" /> {otpCopied ? "Copied" : "Copy"}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -1117,31 +1030,31 @@ function TransfersPage() {
                     {otpCountdown > 0 ? (
                       <span>Resend code in {otpCountdown}s</span>
                     ) : (
-                      <button
+                      <Button
                         type="button"
                         onClick={generateNewOtp}
                         className="text-[#102A43] font-semibold hover:underline flex items-center gap-1"
                       >
                         <RefreshCw className="h-3 w-3" /> Resend One-Time Passcode
-                      </button>
+                      </Button>
                     )}
                   </div>
 
                   <div className="pt-2 flex flex-col gap-3">
-                    <button
+                    <Button
                       type="submit"
                       className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-[#D4AF37] bg-[#102A43] py-3.5 font-serif text-xs font-bold uppercase tracking-[0.16em] text-[#FBF9F5] shadow-md hover:bg-[#16385C] transition"
                     >
                       <ShieldCheck className="h-4 w-4 text-[#E6C663]" /> Confirm & Submit Transfer Request
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setCurrentStep(2)}
                       className="text-xs font-serif text-muted-foreground hover:text-[#102A43] hover:underline"
                     >
                       Cancel and Return to Review
-                    </button>
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -1184,13 +1097,13 @@ function TransfersPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => downloadTransferReceipt(completedTransfer)}
                       className="inline-flex items-center gap-1.5 rounded-md border border-[#D5CEBF] bg-white px-4 py-2 font-serif text-xs font-semibold text-[#102A43] hover:bg-[#FAF8F5] shadow-xs transition"
                     >
                       <Download className="h-3.5 w-3.5 text-[#9E7D2B]" /> Download Official Receipt (.txt)
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -1206,6 +1119,7 @@ function TransfersPage() {
                     <span className="text-muted-foreground">Beneficiary Name</span>
                     <p className="font-serif font-bold text-[#102A43]">{completedTransfer.recipientFullName}</p>
                     <p className="text-muted-foreground">{completedTransfer.recipientBankName}</p>
+                    <p className="text-xs text-muted-foreground">{formatWireAddress(completedTransfer.recipientBankAddress)}</p>
                   </div>
 
                   <div className="rounded-xl border border-[#E3DCCE] p-4 bg-[#FFFDF9] space-y-1">
@@ -1231,13 +1145,13 @@ function TransfersPage() {
 
                 {/* Bottom Navigation */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#E3DCCE]">
-                  <button
+                  <Button
                     type="button"
                     onClick={handleStartNewTransfer}
                     className="inline-flex items-center gap-1.5 font-serif text-xs font-semibold text-[#102A43] hover:underline"
                   >
                     Initiate Another Transfer
-                  </button>
+                  </Button>
 
                   <div className="flex items-center gap-3">
                     <Link
@@ -1314,14 +1228,14 @@ function TransfersPage() {
                       </span>
                     </div>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => downloadTransferReceipt(trf)}
                       title="Download receipt"
                       className="p-1.5 rounded-lg border border-[#D5CEBF] hover:bg-[#FAF8F5] text-[#102A43]"
                     >
                       <Download className="h-4 w-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}

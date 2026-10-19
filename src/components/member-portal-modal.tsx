@@ -1,3 +1,6 @@
+import { WireAddressFields } from "@/components/wire-address-fields";
+import { BankBackButton } from "@/components/bank-back-button";
+import { emptyWireAddress, validateWireAddresses, formatWireAddress } from "@/lib/wire-details";
 import React, { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
@@ -70,23 +73,20 @@ export function MemberPortalModal({
   const { accounts, transfers, saveTransfer } = useTransfers();
 
   // Active Authenticated User Session
-  const [activeAccount, setActiveAccount] = useState<BankAccount | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("citietrust_active_member");
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (_) {}
-      }
-    }
-    return accounts[0] || null;
-  });
-
+  const [activeAccount, setActiveAccount] = useState<BankAccount | null>(null);
   useEffect(() => {
-    if (!activeAccount && accounts.length > 0) {
-      setActiveAccount(accounts[0]);
-    }
-  }, [accounts, activeAccount]);
+    if (!open) return;
+    const stored = sessionStorage.getItem("citietrust_active_member") || localStorage.getItem("citietrust_active_member");
+    let selected: BankAccount | undefined;
+    try {
+      const previous = stored ? JSON.parse(stored) : null;
+      selected = accounts.find(account => account.id === previous?.id);
+    } catch { /* Fall back to the first demonstration profile. */ }
+    setActiveAccount(selected || accounts[0] || null);
+    setActiveTab(initialTab);
+  }, [open, initialTab, accounts]);
+  const memberAccounts = accounts.filter(account => account.ownerEmail === activeAccount?.ownerEmail);
+  const memberTransfers = transfers.filter(transfer => transfer.senderAccount.ownerEmail === activeAccount?.ownerEmail);
 
   const [activeTab, setActiveTab] = useState<"overview" | "transfer" | "history">(initialTab);
 
@@ -108,11 +108,8 @@ export function MemberPortalModal({
   const [transferDateType, setTransferDateType] = useState<"now" | "scheduled">("now");
   const [scheduledDate, setScheduledDate] = useState<string>("2026-10-25");
 
-  // International Address
-  const [recipientStreet, setRecipientStreet] = useState("");
-  const [recipientCity, setRecipientCity] = useState("");
-  const [recipientPostalCode, setRecipientPostalCode] = useState("");
-  const [recipientCountry, setRecipientCountry] = useState("United Kingdom");
+  const [recipientAddress, setRecipientAddress] = useState(emptyWireAddress);
+  const [recipientBankAddress, setRecipientBankAddress] = useState(emptyWireAddress);
 
   // Errors & OTP
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -128,7 +125,7 @@ export function MemberPortalModal({
 
   // Current Sender Account
   const senderAccount = useMemo(() => {
-    return accounts.find((a) => a.id === selectedSenderId) || activeAccount || accounts[0];
+    return memberAccounts.find((a) => a.id === selectedSenderId) || activeAccount;
   }, [accounts, selectedSenderId, activeAccount]);
 
   useEffect(() => {
@@ -223,12 +220,7 @@ export function MemberPortalModal({
       errs.amount = `Insufficient available balance ($${senderAccount.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}).`;
     }
 
-    if (transferType === "international") {
-      if (!recipientStreet.trim()) errs.recipientStreet = "Recipient physical street address is required for international SWIFT wires.";
-      if (!recipientCity.trim()) errs.recipientCity = "Recipient city is required.";
-      if (!recipientPostalCode.trim()) errs.recipientPostalCode = "Postal / ZIP code is required.";
-      if (!recipientCountry.trim()) errs.recipientCountry = "Destination country is required.";
-    }
+    Object.assign(errs, validateWireAddresses(recipientAddress, recipientBankAddress));
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -276,15 +268,8 @@ export function MemberPortalModal({
       amount: numAmount,
       currency,
       transferPurpose: customMemo.trim() ? `${transferPurpose} — ${customMemo.trim()}` : transferPurpose,
-      recipientAddress:
-        transferType === "international"
-          ? {
-              street: recipientStreet.trim(),
-              city: recipientCity.trim(),
-              postalCode: recipientPostalCode.trim(),
-              country: recipientCountry.trim(),
-            }
-          : undefined,
+      recipientAddress,
+      recipientBankAddress,
       transferDateType,
       scheduledDate: transferDateType === "scheduled" ? scheduledDate : undefined,
       fee,
@@ -311,9 +296,8 @@ export function MemberPortalModal({
     setBankIdentifierCode("");
     setAmount("2500");
     setCustomMemo("");
-    setRecipientStreet("");
-    setRecipientCity("");
-    setRecipientPostalCode("");
+    setRecipientAddress(emptyWireAddress());
+    setRecipientBankAddress(emptyWireAddress());
     setErrors({});
     setCompletedTransfer(null);
   };
@@ -321,6 +305,7 @@ export function MemberPortalModal({
   const handleSelectMember = (acct: BankAccount) => {
     setActiveAccount(acct);
     setSelectedSenderId(acct.id);
+    setTransferStep(1);
     if (typeof window !== "undefined") {
       sessionStorage.setItem("citietrust_active_member", JSON.stringify(acct));
     }
@@ -329,11 +314,16 @@ export function MemberPortalModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto bg-[#FAF8F5] border-[#E3DCCE] p-0 text-[#102A43]">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto bg-[#FAF8F5] border-[#E3DCCE] p-0 text-[#102A43] banking-workspace">
         {/* Header Bar */}
         <div className="bg-[#102A43] text-[#FBF9F5] p-6 border-b border-[#D4AF37]/30">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <BankBackButton onBack={() => {
+                if (activeTab === "transfer" && transferStep > 1 && transferStep < 4) setTransferStep(transferStep === 3 ? 2 : 1);
+                else if (activeTab !== "overview") setActiveTab("overview");
+                else onOpenChange(false);
+              }} />
               <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#D4AF37]/60 bg-[#16385C] shadow-inner">
                 <Landmark className="h-5 w-5 text-[#E6C663]" />
               </span>
@@ -342,20 +332,20 @@ export function MemberPortalModal({
                   citiEtrust BANK · Member Banking Portal
                 </DialogTitle>
                 <DialogDescription className="text-xs text-slate-300">
-                  Federally Insured by NCUA · Active Member:{" "}
+                  Demonstration account · Profile:{" "}
                   <strong className="text-[#E6C663]">{activeAccount?.ownerName}</strong> ({activeAccount?.ownerEmail})
                 </DialogDescription>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowSwitchUser(!showSwitchUser)}
                 className="rounded-md border border-[#D4AF37]/40 bg-[#16385C] px-3 py-1.5 font-serif text-[11px] font-semibold text-[#E6C663] hover:bg-[#1a4470] transition"
               >
                 Switch Account Profile
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -365,7 +355,7 @@ export function MemberPortalModal({
               <p className="text-xs font-serif font-bold text-[#E6C663]">Select Registered Member Account:</p>
               <div className="grid sm:grid-cols-2 gap-2 text-xs">
                 {accounts.map((acct) => (
-                  <button
+                  <Button
                     key={acct.id}
                     type="button"
                     onClick={() => handleSelectMember(acct)}
@@ -381,7 +371,7 @@ export function MemberPortalModal({
                       <p className="text-[10px] text-[#E6C663]">Auth Email: {acct.ownerEmail}</p>
                     </div>
                     <span className="font-mono font-bold">${acct.balance.toLocaleString()}</span>
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -389,7 +379,7 @@ export function MemberPortalModal({
 
           {/* Navigation Tabs */}
           <div className="mt-6 flex border-b border-[#D4AF37]/20 text-xs font-serif">
-            <button
+            <Button
               type="button"
               onClick={() => setActiveTab("overview")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
@@ -399,8 +389,8 @@ export function MemberPortalModal({
               }`}
             >
               <CreditCard className="h-3.5 w-3.5" /> Accounts & Balances
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 setActiveTab("transfer");
@@ -413,8 +403,8 @@ export function MemberPortalModal({
               }`}
             >
               <Send className="h-3.5 w-3.5" /> Send Money (Domestic & International)
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setActiveTab("history")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
@@ -424,7 +414,7 @@ export function MemberPortalModal({
               }`}
             >
               <History className="h-3.5 w-3.5" /> Outbound Transfer History
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -442,9 +432,15 @@ export function MemberPortalModal({
                 </h3>
               </div>
 
+              <section className="grid grid-cols-2 gap-3 border-y border-border py-4">
+                <div><p className="text-xs text-muted-foreground">USD account balances</p><p className="text-2xl font-semibold text-foreground">${memberAccounts.filter(a => a.currency === "USD").reduce((total, a) => total + a.balance, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p></div>
+                <div><p className="text-xs text-muted-foreground">Wires awaiting review</p><p className="text-2xl font-semibold text-gold">{memberTransfers.filter(t => t.status === "Pending Review").length}</p></div>
+                <Button onClick={() => { setActiveTab("transfer"); setTransferStep(1); }}><Send className="h-4 w-4" /> Wire transfer</Button>
+                <Button variant="outline" onClick={() => setActiveTab("history")}><History className="h-4 w-4" /> Activity</Button>
+              </section>
               <div className="grid sm:grid-cols-2 gap-4">
                 {accounts
-                  .filter((a) => a.ownerEmail === activeAccount?.ownerEmail || accounts.length <= 4)
+                  .filter((a) => a.ownerEmail === activeAccount?.ownerEmail)
                   .map((acct) => (
                     <div
                       key={acct.id}
@@ -462,7 +458,7 @@ export function MemberPortalModal({
                             ${acct.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </p>
                         </div>
-                        <button
+                        <Button
                           type="button"
                           onClick={() => {
                             setSelectedSenderId(acct.id);
@@ -472,7 +468,7 @@ export function MemberPortalModal({
                           className="rounded-md border border-[#9E7D2B] bg-[#102A43] px-3 py-1.5 font-serif text-[11px] font-bold text-[#FBF9F5] hover:bg-[#16385C] transition flex items-center gap-1 shadow-xs"
                         >
                           <Send className="h-3 w-3 text-[#E6C663]" /> Transfer
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="pt-2 border-t border-[#E3DCCE] flex justify-between text-[11px] text-muted-foreground">
@@ -494,7 +490,7 @@ export function MemberPortalModal({
                     </p>
                   </div>
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
@@ -503,7 +499,7 @@ export function MemberPortalModal({
                   className="rounded-md bg-[#102A43] px-4 py-2 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shrink-0"
                 >
                   Send Wire Now
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -539,7 +535,7 @@ export function MemberPortalModal({
                 <form onSubmit={handleProceedToReview} className="space-y-5">
                   {/* Transfer Classification */}
                   <div className="grid sm:grid-cols-2 gap-3">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setTransferType("domestic");
@@ -556,9 +552,9 @@ export function MemberPortalModal({
                         <p className="font-serif font-bold text-xs text-[#102A43]">Domestic Transfer (Fedwire / ACH)</p>
                         <p className="text-[11px] text-muted-foreground">Free member wire ($0.00). Same-day execution.</p>
                       </div>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setTransferType("international")}
                       className={`flex items-start gap-3 rounded-xl border p-3 text-left transition ${
@@ -572,7 +568,7 @@ export function MemberPortalModal({
                         <p className="font-serif font-bold text-xs text-[#102A43]">International Transfer (SWIFT GPI)</p>
                         <p className="text-[11px] text-muted-foreground">Cross-border multi-currency wire ($35.00 fee).</p>
                       </div>
-                    </button>
+                    </Button>
                   </div>
 
                   {/* Sender Account */}
@@ -585,7 +581,7 @@ export function MemberPortalModal({
                       onChange={(e) => setSelectedSenderId(e.target.value)}
                       className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 text-xs text-[#102A43] font-semibold"
                     >
-                      {accounts.map((a) => (
+                      {memberAccounts.map((a) => (
                         <option key={a.id} value={a.id}>
                           {a.name} ({a.accountNumberMasked}) — Available: ${a.balance.toLocaleString()}
                         </option>
@@ -705,69 +701,8 @@ export function MemberPortalModal({
                     </div>
                   )}
 
-                  {/* International Address Fields */}
-                  {transferType === "international" && (
-                    <div className="pt-3 border-t border-[#E3DCCE] space-y-3 text-xs">
-                      <span className="font-serif font-bold text-[#102A43]">
-                        Beneficiary Physical Address (Required for International SWIFT)
-                      </span>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] text-muted-foreground mb-1">Street Address *</label>
-                          <input
-                            type="text"
-                            required
-                            value={recipientStreet}
-                            onChange={(e) => setRecipientStreet(e.target.value)}
-                            placeholder="e.g. 17 Quai de l'Île"
-                            className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
-                          />
-                          {errors.recipientStreet && <p className="text-xs text-red-600 mt-1">{errors.recipientStreet}</p>}
-                        </div>
-                        <div>
-                          <label className="block text-[11px] text-muted-foreground mb-1">City *</label>
-                          <input
-                            type="text"
-                            required
-                            value={recipientCity}
-                            onChange={(e) => setRecipientCity(e.target.value)}
-                            placeholder="e.g. Geneva, London"
-                            className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
-                          />
-                          {errors.recipientCity && <p className="text-xs text-red-600 mt-1">{errors.recipientCity}</p>}
-                        </div>
-                      </div>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] text-muted-foreground mb-1">Postal / ZIP Code *</label>
-                          <input
-                            type="text"
-                            required
-                            value={recipientPostalCode}
-                            onChange={(e) => setRecipientPostalCode(e.target.value)}
-                            placeholder="e.g. 1204"
-                            className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
-                          />
-                          {errors.recipientPostalCode && <p className="text-xs text-red-600 mt-1">{errors.recipientPostalCode}</p>}
-                        </div>
-                        <div>
-                          <label className="block text-[11px] text-muted-foreground mb-1">Country *</label>
-                          <select
-                            value={recipientCountry}
-                            onChange={(e) => setRecipientCountry(e.target.value)}
-                            className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
-                          >
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Switzerland">Switzerland</option>
-                            <option value="Germany">Germany</option>
-                            <option value="Canada">Canada</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Other">Other Non-Sanctioned Jurisdiction</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <WireAddressFields title="Recipient address" prefix="recipient" value={recipientAddress} onChange={setRecipientAddress} errors={errors} />
+                  <WireAddressFields title="Recipient bank address" prefix="bank" value={recipientBankAddress} onChange={setRecipientBankAddress} errors={errors} />
 
                   {/* Amount & Purpose */}
                   <div className="grid sm:grid-cols-3 gap-3 text-xs">
@@ -832,12 +767,12 @@ export function MemberPortalModal({
 
                   {/* Actions */}
                   <div className="flex justify-end pt-2">
-                    <button
+                    <Button
                       type="submit"
                       className="rounded-md border border-[#D4AF37] bg-[#102A43] px-6 py-2.5 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition flex items-center gap-1.5"
                     >
                       Review Transfer <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
@@ -862,6 +797,8 @@ export function MemberPortalModal({
                         <span className="text-[10px] text-muted-foreground uppercase font-serif">Beneficiary Account</span>
                         <p className="font-bold text-[#102A43]">{recipientFullName}</p>
                         <p className="text-muted-foreground">{recipientBankName}</p>
+                        <p className="text-xs text-muted-foreground">Bank address: {formatWireAddress(recipientBankAddress)}</p>
+                        <p className="text-xs text-muted-foreground">Recipient address: {formatWireAddress(recipientAddress)}</p>
                         <p className="font-mono text-muted-foreground">{maskAccountNumber(accountNumberOrIBAN)}</p>
                         <p className="font-mono text-[11px] text-muted-foreground">
                           {transferType === "domestic" ? "ABA Routing: " : "SWIFT: "}
@@ -907,21 +844,21 @@ export function MemberPortalModal({
                     </div>
 
                     <div className="flex justify-between pt-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setTransferStep(1)}
                         className="rounded border border-[#D5CEBF] bg-white px-4 py-2 font-serif font-semibold text-[#102A43]"
                       >
                         Edit Details
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
                         onClick={() => setTransferStep(3)}
                         className="rounded-md border border-[#D4AF37] bg-[#102A43] px-6 py-2 font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition"
                       >
                         Proceed to Email OTP Verification →
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -947,7 +884,7 @@ export function MemberPortalModal({
                     <div className="flex items-center justify-between bg-black/40 p-2 rounded border border-white/10 font-mono text-xs">
                       <span className="text-slate-400">Passkey:</span>
                       <span className="font-bold text-base text-[#E6C663] tracking-widest">{simulatedExpectedOtp}</span>
-                      <button
+                      <Button
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(simulatedExpectedOtp);
@@ -957,7 +894,7 @@ export function MemberPortalModal({
                         className="text-[10px] text-slate-300 hover:text-white"
                       >
                         {otpCopied ? "Copied" : "Copy"}
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
@@ -989,30 +926,30 @@ export function MemberPortalModal({
                         {otpCountdown > 0 ? (
                           <span>Resend available in {otpCountdown}s</span>
                         ) : (
-                          <button
+                          <Button
                             type="button"
                             onClick={generateNewOtp}
                             className="text-[#102A43] font-semibold hover:underline"
                           >
                             Resend One-Time Passcode
-                          </button>
+                          </Button>
                         )}
                       </div>
 
                       <div className="pt-2 flex flex-col gap-2">
-                        <button
+                        <Button
                           type="submit"
                           className="w-full rounded-md border border-[#D4AF37] bg-[#102A43] py-2.5 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition"
                         >
                           Verify & Submit for Review
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
                           onClick={() => setTransferStep(2)}
                           className="text-xs text-muted-foreground hover:underline"
                         >
                           Back to Review
-                        </button>
+                        </Button>
                       </div>
                     </form>
                   </div>
@@ -1040,6 +977,7 @@ export function MemberPortalModal({
 
                   <div className="rounded-lg bg-[#FAF8F5] border border-[#E3DCCE] p-4 text-left space-y-1.5">
                     <p><strong>Beneficiary:</strong> {completedTransfer.recipientFullName} ({completedTransfer.recipientBankName})</p>
+                    <p><strong>Bank address:</strong> {formatWireAddress(completedTransfer.recipientBankAddress)}</p>
                     <p><strong>Account:</strong> {completedTransfer.accountNumberMasked} · {completedTransfer.bankIdentifierType.toUpperCase()}: {completedTransfer.bankIdentifierCode}</p>
                     <p><strong>Total Debit:</strong> ${completedTransfer.totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD</p>
                     <p><strong>Estimated Settlement:</strong> {completedTransfer.estimatedDelivery}</p>
@@ -1049,29 +987,29 @@ export function MemberPortalModal({
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => downloadTransferReceipt(completedTransfer)}
                       className="rounded-md border border-[#D5CEBF] bg-white px-4 py-2 font-serif font-semibold text-[#102A43] hover:bg-[#FAF8F5] flex items-center gap-1.5"
                     >
                       <Download className="h-3.5 w-3.5 text-[#9E7D2B]" /> Download Receipt Slip (.txt)
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setActiveTab("history")}
                       className="rounded-md bg-[#102A43] px-4 py-2 font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C]"
                     >
                       View in Transfer History →
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={handleResetTransfer}
                       className="rounded-md border border-[#D5CEBF] px-3 py-2 text-muted-foreground hover:text-[#102A43]"
                     >
                       New Transfer
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1090,7 +1028,7 @@ export function MemberPortalModal({
                     Your Outbound Transfers Ledger
                   </h3>
                 </div>
-                <button
+                <Button
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
@@ -1099,14 +1037,14 @@ export function MemberPortalModal({
                   className="rounded-md bg-[#102A43] px-3 py-1.5 font-serif text-[11px] font-bold text-[#FBF9F5] hover:bg-[#16385C]"
                 >
                   + New Wire Transfer
-                </button>
+                </Button>
               </div>
 
               <div className="divide-y divide-[#E3DCCE]">
-                {transfers.length === 0 ? (
+                {memberTransfers.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">No transfer records found.</p>
                 ) : (
-                  transfers.map((trf) => (
+                  memberTransfers.map((trf) => (
                     <div key={trf.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
@@ -1160,14 +1098,14 @@ export function MemberPortalModal({
                           </span>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
                           onClick={() => downloadTransferReceipt(trf)}
                           title="Download receipt"
                           className="p-1.5 rounded border border-[#D5CEBF] hover:bg-[#FAF8F5]"
                         >
                           <Download className="h-3.5 w-3.5 text-slate-700" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ))
