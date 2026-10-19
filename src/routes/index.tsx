@@ -28,6 +28,8 @@ import bankBuilding from "@/assets/bank-building.jpg";
 import m1 from "@/assets/member-1.jpg";
 import m2 from "@/assets/member-2.jpg";
 import m3 from "@/assets/member-3.jpg";
+import boardroomAsset from "@/assets/hero-boardroom.jpg.asset.json";
+import teamDocsAsset from "@/assets/team-documents.jpg.asset.json";
 import { OpenAccountModal } from "@/components/open-account-modal";
 import { MemberPortalModal } from "@/components/member-portal-modal";
 
@@ -62,11 +64,11 @@ const eyebrow =
 function Logo({ light = false }: { light?: boolean }) {
   return (
     <a href="/" className="flex items-center gap-2.5" aria-label="citiEtrust Bank home">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-gradient shadow-soft">
+      <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold-gradient shadow-soft">
         <ShieldCheck className="h-5 w-5 text-primary-foreground" />
       </span>
       <span className={`font-display text-lg font-bold tracking-tight ${light ? "text-navy-foreground" : "text-foreground"}`}>
-        citiEtrust <span className="text-emerald">Bank</span>
+        citiEtrust <span className="text-gold">Bank</span>
       </span>
     </a>
   );
@@ -137,7 +139,7 @@ function AppCard() {
               <p className="font-medium">{t.name}</p>
               <p className="text-xs text-muted-foreground">{t.date}</p>
             </div>
-            <span className={`font-semibold ${t.pos ? "text-emerald" : "text-foreground"}`}>{t.amt}</span>
+            <span className={`font-semibold ${t.pos ? "text-gold" : "text-foreground"}`}>{t.amt}</span>
           </li>
         ))}
       </ul>
@@ -162,29 +164,30 @@ function AppCard() {
 
 function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOpenPortal: () => void }) {
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative flex min-h-[calc(100svh-4.5rem)] items-center overflow-hidden">
       <img
         src={bankBuilding}
         alt=""
         aria-hidden="true"
         width={1600}
         height={912}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.14]"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 pb-24 pt-16 lg:grid-cols-[1.15fr_1fr] lg:pt-24">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy via-navy/90 to-navy/45" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background" />
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-6 py-12 lg:grid-cols-[1.15fr_1fr] lg:gap-14 lg:py-20">
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           <span className={eyebrow}>
             <Zap className="h-3.5 w-3.5" /> New: 4.10% APY high-yield savings
           </span>
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Banking that moves <span className="text-emerald">as fast as you do.</span>
+          <h1 className="mt-5 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
+            Banking that moves <span className="text-gold">as fast as you do.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
             No monthly fees, instant transfers, and real people when you need them. Open an account in
             under five minutes — right from your phone.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button type="button" onClick={onOpenAccount} className={btnPrimary}>
               Open an account <ArrowRight className="h-4 w-4" />
             </button>
@@ -192,10 +195,10 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
               Sign in to online banking
             </button>
           </div>
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald" /> Insured to $250,000</span>
-            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-emerald" /> 4.9 app rating</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald" /> 0 hidden fees</span>
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-gold" /> Insured to $250,000</span>
+            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-gold" /> 4.9 app rating</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-gold" /> 0 hidden fees</span>
           </div>
         </div>
         <div className="flex justify-center lg:justify-end">
@@ -278,7 +281,7 @@ function Rates({ onOpenAccount }: { onOpenAccount: () => void }) {
         <div>
           <h2 className="font-display text-4xl font-bold tracking-tight">Rates that actually reward you.</h2>
           <p className="mt-4 text-navy-foreground/75">Updated daily. No teaser periods, no fine print surprises.</p>
-          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
+          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
             Start earning <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -307,8 +310,8 @@ function Why() {
   return (
     <section id="why" className="mx-auto max-w-7xl px-6 py-24">
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-        <div className="overflow-hidden rounded-3xl shadow-lift">
-          <img src={bankBuilding} alt="citiEtrust Bank branch exterior" loading="lazy" width={1600} height={912} className="h-full w-full object-cover" />
+        <div className="overflow-hidden rounded-3xl border border-border/60 shadow-lift">
+          <img src={boardroomAsset.url} alt="citiEtrust advisers meeting with members around a conference table" loading="lazy" width={736} height={981} className="h-full w-full object-cover" />
         </div>
         <div>
           <span className={eyebrow}>Why citiEtrust</span>
@@ -319,7 +322,7 @@ function Why() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             {f.map((x) => (
               <div key={x.t}>
-                <x.icon className="h-6 w-6 text-emerald" />
+                <x.icon className="h-6 w-6 text-gold" />
                 <h3 className="mt-3 font-semibold">{x.t}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{x.d}</p>
               </div>
@@ -344,7 +347,7 @@ function Stories() {
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {s.map((x) => (
             <figure key={x.n} className="rounded-3xl border border-border bg-card p-7 shadow-soft">
-              <div className="flex gap-0.5 text-emerald">
+              <div className="flex gap-0.5 text-gold">
                 {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
               </div>
               <blockquote className="mt-4 text-foreground">“{x.q}”</blockquote>
@@ -366,12 +369,18 @@ function Stories() {
 function CTA({ onOpenAccount }: { onOpenAccount: () => void }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-24">
-      <div className="relative overflow-hidden rounded-[2rem] bg-emerald-gradient px-8 py-16 text-center text-primary-foreground">
-        <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Open your account in 5 minutes.</h2>
-        <p className="mx-auto mt-4 max-w-xl opacity-90">No paperwork, no branch visit, no minimum deposit.</p>
-        <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-card px-7 py-3.5 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
-          Get started <ArrowRight className="h-4 w-4" />
-        </button>
+      <div className="relative grid overflow-hidden rounded-[2rem] bg-gold-gradient text-primary-foreground lg:grid-cols-[1.15fr_0.85fr]">
+        <div className="px-6 py-10 text-center lg:px-14 lg:py-16 lg:text-left">
+          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">Open your account in 5 minutes.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm opacity-90 lg:mx-0 lg:text-base">No paperwork, no branch visit, no minimum deposit.</p>
+          <button type="button" onClick={onOpenAccount} className="mt-6 inline-flex items-center gap-2 rounded-full bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
+            Get started <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="relative min-h-[13rem] lg:min-h-[22rem]">
+          <img src={teamDocsAsset.url} alt="citiEtrust members reviewing paperwork with a bank adviser" loading="lazy" width={736} height={981} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/45 to-transparent" />
+        </div>
       </div>
     </section>
   );

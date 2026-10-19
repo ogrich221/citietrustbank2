@@ -472,7 +472,7 @@ export function OpenAccountModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] w-[95vw] max-w-3xl overflow-y-auto border-2 border-border/80 bg-[#FAF8F5] p-0 text-foreground shadow-2xl sm:rounded-xl">
         <DialogHeader className="sr-only">
-          <DialogTitle>Open an Account - Trustora Credit Union</DialogTitle>
+          <DialogTitle>Open an Account - citiEtrust Bank</DialogTitle>
           <DialogDescription>
             Secure, 4-step membership application flow protected with bank-grade encryption.
           </DialogDescription>
@@ -487,7 +487,7 @@ export function OpenAccountModal({
               </span>
               <div>
                 <p className="font-serif text-lg font-semibold tracking-wide text-[#FBF9F5]">
-                  Trustora Credit Union
+                  citiEtrust Bank
                 </p>
                 <p className="text-[11px] uppercase tracking-[0.18em] text-[#C5A059]">
                   Member Application Portal · Est. 1952
@@ -546,7 +546,7 @@ export function OpenAccountModal({
               </span>
 
               <h3 className="mt-3 font-serif text-2xl font-bold text-[#102A43] sm:text-3xl">
-                Welcome to Trustora Credit Union!
+                Welcome to citiEtrust Bank!
               </h3>
 
               <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-muted-foreground">
@@ -623,7 +623,7 @@ export function OpenAccountModal({
                     share deposit.
                   </li>
                   <li>
-                    Your contactless Trustora Visa Debit Card will be dispatched to your home address via
+                    Your contactless citiEtrust Visa Debit Card will be dispatched to your home address via
                     secure postal mail.
                   </li>
                 </ol>
@@ -674,7 +674,7 @@ export function OpenAccountModal({
                       <p className="font-semibold text-[#3E2723]">Bank-Grade Privacy & Encryption</p>
                       <p className="mt-0.5 text-[#5D4037] leading-relaxed">
                         “Your information is protected with bank-grade encryption (256-bit SSL) and never
-                        sold.” Trustora Credit Union adheres strictly to federal privacy standards under NCUA
+                        sold.” citiEtrust Bank adheres strictly to federal privacy standards under NCUA
                         oversight.
                       </p>
                     </div>
@@ -1347,7 +1347,7 @@ export function OpenAccountModal({
                       Multi-Factor Authentication (MFA) Preference <span className="text-red-600">*</span>
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      Required for all Trustora online banking access to protect your funds against
+                      Required for all citiEtrust online banking access to protect your funds against
                       unauthorized logins.
                     </p>
 
@@ -1686,9 +1686,9 @@ export function OpenAccountModal({
                       />
                       <span className="text-muted-foreground leading-snug">
                         <strong className="text-foreground">
-                          Trustora Membership Agreement & Truth-in-Savings:
+                          citiEtrust Membership Agreement & Truth-in-Savings:
                         </strong>{" "}
-                        I agree to the bylaws of Trustora Credit Union, the Fee Schedule, and purchase of a
+                        I agree to the bylaws of citiEtrust Bank, the Fee Schedule, and purchase of a
                         $5 par value membership share upon approval.
                       </span>
                     </label>
@@ -1707,7 +1707,7 @@ export function OpenAccountModal({
                         <strong className="text-foreground">
                           Consumer Report & Identity Authorization:
                         </strong>{" "}
-                        I authorize Trustora Credit Union to obtain credit and identity reports from
+                        I authorize citiEtrust Bank to obtain credit and identity reports from
                         reporting agencies to verify eligibility (does not impact credit score for deposit
                         accounts).
                       </span>
