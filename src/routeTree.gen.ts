@@ -18,13 +18,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-
 const TransfersRoute = TransfersRouteImport.update({
   id: '/transfers',
   path: '/transfers',
@@ -36,20 +34,17 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/transfers': typeof TransfersRoute
 }
-
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/transfers': typeof TransfersRoute
 }
-
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/transfers': typeof TransfersRoute
 }
-
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/admin' | '/transfers'
@@ -58,7 +53,6 @@ export interface FileRouteTypes {
   id: '__root__' | '/' | '/admin' | '/transfers'
   fileRoutesById: FileRoutesById
 }
-
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
@@ -96,7 +90,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   TransfersRoute: TransfersRoute,
 }
-
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
