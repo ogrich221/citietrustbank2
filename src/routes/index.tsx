@@ -62,11 +62,11 @@ const eyebrow =
 function Logo({ light = false }: { light?: boolean }) {
   return (
     <a href="/" className="flex items-center gap-2.5" aria-label="citiEtrust Bank home">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-gradient shadow-soft">
+      <span className="grid h-9 w-9 place-items-center rounded-xl bg-gold-gradient shadow-soft">
         <ShieldCheck className="h-5 w-5 text-primary-foreground" />
       </span>
       <span className={`font-display text-lg font-bold tracking-tight ${light ? "text-navy-foreground" : "text-foreground"}`}>
-        citiEtrust <span className="text-emerald">Bank</span>
+        citiEtrust <span className="text-gold">Bank</span>
       </span>
     </a>
   );
@@ -137,7 +137,7 @@ function AppCard() {
               <p className="font-medium">{t.name}</p>
               <p className="text-xs text-muted-foreground">{t.date}</p>
             </div>
-            <span className={`font-semibold ${t.pos ? "text-emerald" : "text-foreground"}`}>{t.amt}</span>
+            <span className={`font-semibold ${t.pos ? "text-gold" : "text-foreground"}`}>{t.amt}</span>
           </li>
         ))}
       </ul>
@@ -178,7 +178,7 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
             <Zap className="h-3.5 w-3.5" /> New: 4.10% APY high-yield savings
           </span>
           <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-            Banking that moves <span className="text-emerald">as fast as you do.</span>
+            Banking that moves <span className="text-gold">as fast as you do.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
             No monthly fees, instant transfers, and real people when you need them. Open an account in
@@ -193,9 +193,9 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
             </button>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald" /> Insured to $250,000</span>
-            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-emerald" /> 4.9 app rating</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald" /> 0 hidden fees</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-gold" /> Insured to $250,000</span>
+            <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-gold" /> 4.9 app rating</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-gold" /> 0 hidden fees</span>
           </div>
         </div>
         <div className="flex justify-center lg:justify-end">
@@ -278,7 +278,7 @@ function Rates({ onOpenAccount }: { onOpenAccount: () => void }) {
         <div>
           <h2 className="font-display text-4xl font-bold tracking-tight">Rates that actually reward you.</h2>
           <p className="mt-4 text-navy-foreground/75">Updated daily. No teaser periods, no fine print surprises.</p>
-          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-emerald px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
+          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90">
             Start earning <ArrowRight className="h-4 w-4" />
           </button>
         </div>
@@ -319,7 +319,7 @@ function Why() {
           <div className="mt-8 grid gap-6 sm:grid-cols-2">
             {f.map((x) => (
               <div key={x.t}>
-                <x.icon className="h-6 w-6 text-emerald" />
+                <x.icon className="h-6 w-6 text-gold" />
                 <h3 className="mt-3 font-semibold">{x.t}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{x.d}</p>
               </div>
@@ -344,7 +344,7 @@ function Stories() {
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {s.map((x) => (
             <figure key={x.n} className="rounded-3xl border border-border bg-card p-7 shadow-soft">
-              <div className="flex gap-0.5 text-emerald">
+              <div className="flex gap-0.5 text-gold">
                 {Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-4 w-4 fill-current" />)}
               </div>
               <blockquote className="mt-4 text-foreground">“{x.q}”</blockquote>
@@ -366,7 +366,7 @@ function Stories() {
 function CTA({ onOpenAccount }: { onOpenAccount: () => void }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-24">
-      <div className="relative overflow-hidden rounded-[2rem] bg-emerald-gradient px-8 py-16 text-center text-primary-foreground">
+      <div className="relative overflow-hidden rounded-[2rem] bg-gold-gradient px-8 py-16 text-center text-primary-foreground">
         <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Open your account in 5 minutes.</h2>
         <p className="mx-auto mt-4 max-w-xl opacity-90">No paperwork, no branch visit, no minimum deposit.</p>
         <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-card px-7 py-3.5 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
