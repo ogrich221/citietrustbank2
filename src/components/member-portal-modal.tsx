@@ -339,7 +339,7 @@ export function MemberPortalModal({
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => setShowSwitchUser(!showSwitchUser)}
                 className="rounded-md border border-gold/40 bg-secondary px-3 py-1.5 font-serif text-[11px] font-semibold text-gold hover:bg-secondary transition"
@@ -355,7 +355,7 @@ export function MemberPortalModal({
               <p className="text-xs font-serif font-bold text-gold">Select Registered Member Account:</p>
               <div className="grid sm:grid-cols-2 gap-2 text-xs">
                 {accounts.map((acct) => (
-                  <Button
+                  <Button variant="ghost"
                     key={acct.id}
                     type="button"
                     onClick={() => handleSelectMember(acct)}
@@ -379,7 +379,7 @@ export function MemberPortalModal({
 
           {/* Navigation Tabs */}
           <div className="mt-6 flex border-b border-gold/20 text-xs font-serif">
-            <Button
+            <Button variant="ghost"
               type="button"
               onClick={() => setActiveTab("overview")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
@@ -390,7 +390,7 @@ export function MemberPortalModal({
             >
               <CreditCard className="h-3.5 w-3.5" /> Accounts & Balances
             </Button>
-            <Button
+            <Button variant="ghost"
               type="button"
               onClick={() => {
                 setActiveTab("transfer");
@@ -404,7 +404,7 @@ export function MemberPortalModal({
             >
               <Send className="h-3.5 w-3.5" /> Send Money (Domestic & International)
             </Button>
-            <Button
+            <Button variant="ghost"
               type="button"
               onClick={() => setActiveTab("history")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
@@ -458,7 +458,7 @@ export function MemberPortalModal({
                             ${acct.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </p>
                         </div>
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => {
                             setSelectedSenderId(acct.id);
@@ -490,7 +490,7 @@ export function MemberPortalModal({
                     </p>
                   </div>
                 </div>
-                <Button
+                <Button variant="ghost"
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
@@ -535,7 +535,7 @@ export function MemberPortalModal({
                 <form onSubmit={handleProceedToReview} className="space-y-5">
                   {/* Transfer Classification */}
                   <div className="grid sm:grid-cols-2 gap-3">
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => {
                         setTransferType("domestic");
@@ -554,7 +554,7 @@ export function MemberPortalModal({
                       </div>
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => setTransferType("international")}
                       className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
@@ -767,7 +767,7 @@ export function MemberPortalModal({
 
                   {/* Actions */}
                   <div className="flex justify-end pt-2">
-                    <Button
+                    <Button variant="ghost"
                       type="submit"
                       className="rounded-md border border-gold bg-navy px-6 py-2.5 font-serif text-xs font-bold text-foreground hover:bg-secondary shadow-md transition flex items-center gap-1.5"
                     >
@@ -844,7 +844,7 @@ export function MemberPortalModal({
                     </div>
 
                     <div className="flex justify-between pt-2">
-                      <Button
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => setTransferStep(1)}
                         className="rounded border border-input bg-card px-4 py-2 font-serif font-semibold text-foreground"
@@ -852,7 +852,7 @@ export function MemberPortalModal({
                         Edit Details
                       </Button>
 
-                      <Button
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => setTransferStep(3)}
                         className="rounded-md border border-gold bg-navy px-6 py-2 font-serif font-bold text-foreground hover:bg-secondary shadow-md transition"
@@ -884,7 +884,7 @@ export function MemberPortalModal({
                     <div className="flex items-center justify-between bg-background/40 p-2 rounded border border-border/10 font-mono text-xs">
                       <span className="text-foreground">Passkey:</span>
                       <span className="font-bold text-base text-gold tracking-widest">{simulatedExpectedOtp}</span>
-                      <Button
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(simulatedExpectedOtp);
@@ -926,7 +926,7 @@ export function MemberPortalModal({
                         {otpCountdown > 0 ? (
                           <span>Resend available in {otpCountdown}s</span>
                         ) : (
-                          <Button
+                          <Button variant="ghost"
                             type="button"
                             onClick={generateNewOtp}
                             className="text-foreground font-semibold hover:underline"
@@ -937,13 +937,13 @@ export function MemberPortalModal({
                       </div>
 
                       <div className="pt-2 flex flex-col gap-2">
-                        <Button
+                        <Button variant="ghost"
                           type="submit"
                           className="w-full rounded-md border border-gold bg-navy py-2.5 font-serif text-xs font-bold text-foreground hover:bg-secondary shadow-md transition"
                         >
                           Verify & Submit for Review
                         </Button>
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => setTransferStep(2)}
                           className="text-xs text-muted-foreground hover:underline"
@@ -987,7 +987,7 @@ export function MemberPortalModal({
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => downloadTransferReceipt(completedTransfer)}
                       className="rounded-md border border-input bg-card px-4 py-2 font-serif font-semibold text-foreground hover:bg-background flex items-center gap-1.5"
@@ -995,7 +995,7 @@ export function MemberPortalModal({
                       <Download className="h-3.5 w-3.5 text-gold" /> Download Receipt Slip (.txt)
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => setActiveTab("history")}
                       className="rounded-md bg-navy px-4 py-2 font-serif font-bold text-foreground hover:bg-secondary"
@@ -1003,7 +1003,7 @@ export function MemberPortalModal({
                       View in Transfer History →
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={handleResetTransfer}
                       className="rounded-md border border-input px-3 py-2 text-muted-foreground hover:text-foreground"
@@ -1028,7 +1028,7 @@ export function MemberPortalModal({
                     Your Outbound Transfers Ledger
                   </h3>
                 </div>
-                <Button
+                <Button variant="ghost"
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
@@ -1098,7 +1098,7 @@ export function MemberPortalModal({
                           </span>
                         </div>
 
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => downloadTransferReceipt(trf)}
                           title="Download receipt"
