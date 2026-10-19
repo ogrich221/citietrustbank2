@@ -175,19 +175,19 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
       />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-navy via-navy/90 to-navy/45" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background" />
-      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-[1.15fr_1fr]">
+      <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 px-6 py-12 lg:grid-cols-[1.15fr_1fr] lg:gap-14 lg:py-20">
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           <span className={eyebrow}>
             <Zap className="h-3.5 w-3.5" /> New: 4.10% APY high-yield savings
           </span>
-          <h1 className="mt-6 font-display text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className="mt-5 font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
             Banking that moves <span className="text-gold">as fast as you do.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
+          <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
             No monthly fees, instant transfers, and real people when you need them. Open an account in
             under five minutes — right from your phone.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap gap-3">
             <button type="button" onClick={onOpenAccount} className={btnPrimary}>
               Open an account <ArrowRight className="h-4 w-4" />
             </button>
@@ -195,7 +195,7 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
               Sign in to online banking
             </button>
           </div>
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+          <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-gold" /> Insured to $250,000</span>
             <span className="flex items-center gap-1.5"><Star className="h-4 w-4 text-gold" /> 4.9 app rating</span>
             <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-gold" /> 0 hidden fees</span>
@@ -370,14 +370,14 @@ function CTA({ onOpenAccount }: { onOpenAccount: () => void }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-24">
       <div className="relative grid overflow-hidden rounded-[2rem] bg-gold-gradient text-primary-foreground lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="px-8 py-16 text-center lg:px-14 lg:py-20 lg:text-left">
-          <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Open your account in 5 minutes.</h2>
-          <p className="mx-auto mt-4 max-w-xl opacity-90 lg:mx-0">No paperwork, no branch visit, no minimum deposit.</p>
-          <button type="button" onClick={onOpenAccount} className="mt-8 inline-flex items-center gap-2 rounded-full bg-card px-7 py-3.5 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
+        <div className="px-6 py-10 text-center lg:px-14 lg:py-16 lg:text-left">
+          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">Open your account in 5 minutes.</h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm opacity-90 lg:mx-0 lg:text-base">No paperwork, no branch visit, no minimum deposit.</p>
+          <button type="button" onClick={onOpenAccount} className="mt-6 inline-flex items-center gap-2 rounded-full bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-lift transition hover:-translate-y-0.5">
             Get started <ArrowRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="relative min-h-[20rem]">
+        <div className="relative min-h-[13rem] lg:min-h-[22rem]">
           <img src={teamDocsAsset.url} alt="citiEtrust members reviewing paperwork with a bank adviser" loading="lazy" width={736} height={981} className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-primary/45 to-transparent" />
         </div>
