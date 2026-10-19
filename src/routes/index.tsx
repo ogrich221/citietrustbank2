@@ -169,7 +169,7 @@ function Hero({ onOpenAccount, onOpenPortal }: { onOpenAccount: () => void; onOp
         aria-hidden="true"
         width={1600}
         height={912}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.14]"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-[0.22]"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
       <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 pb-24 pt-16 lg:grid-cols-[1.15fr_1fr] lg:pt-24">
