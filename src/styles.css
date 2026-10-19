@@ -100,3 +100,19 @@
   }
   h1, h2, h3 { font-family: var(--font-display); letter-spacing: 0; }
 }
+
+/* Keep the banking workspaces within the available screen width. */
+.banking-workspace { font-family: var(--font-sans); }
+.banking-workspace .font-serif { font-family: var(--font-sans); }
+.banking-workspace > div, .banking-workspace form, .banking-workspace fieldset { min-width: 0; }
+.banking-workspace input, .banking-workspace select { max-width: 100%; }
+.banking-workspace [class*="tracking-"] { letter-spacing: 0; }
+[role="dialog"].banking-workspace { width: min(56rem, calc(100vw - 1.5rem)); }
+.banking-workspace button { white-space: normal; height: auto; min-height: 2.25rem; }
+.banking-workspace button[class*="bg-gold"] { color: var(--primary-foreground); }
+@media (max-width: 639px) {
+  .banking-workspace header > div { flex-wrap: wrap; gap: 0.75rem; }
+  .banking-workspace [class*="justify-between"] { flex-wrap: wrap; gap: 0.75rem; }
+  .banking-workspace [class*="border-b"][class*="font-serif"] { flex-wrap: wrap; }
+  .banking-workspace [class*="grid-cols-4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

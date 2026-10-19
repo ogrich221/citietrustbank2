@@ -314,9 +314,9 @@ export function MemberPortalModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto bg-[#FAF8F5] border-[#E3DCCE] p-0 text-[#102A43] banking-workspace">
+      <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto bg-background border-border p-0 text-foreground banking-workspace">
         {/* Header Bar */}
-        <div className="bg-[#102A43] text-[#FBF9F5] p-6 border-b border-[#D4AF37]/30">
+        <div className="bg-navy text-foreground p-6 border-b border-gold/30">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <BankBackButton onBack={() => {
@@ -324,25 +324,25 @@ export function MemberPortalModal({
                 else if (activeTab !== "overview") setActiveTab("overview");
                 else onOpenChange(false);
               }} />
-              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#D4AF37]/60 bg-[#16385C] shadow-inner">
-                <Landmark className="h-5 w-5 text-[#E6C663]" />
+              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-gold/60 bg-secondary shadow-inner">
+                <Landmark className="h-5 w-5 text-gold" />
               </span>
               <div>
-                <DialogTitle className="font-serif text-xl font-bold tracking-tight text-[#FBF9F5]">
+                <DialogTitle className="font-serif text-xl font-bold tracking-normal text-foreground">
                   citiEtrust BANK · Member Banking Portal
                 </DialogTitle>
-                <DialogDescription className="text-xs text-slate-300">
+                <DialogDescription className="text-xs text-foreground">
                   Demonstration account · Profile:{" "}
-                  <strong className="text-[#E6C663]">{activeAccount?.ownerName}</strong> ({activeAccount?.ownerEmail})
+                  <strong className="text-gold">{activeAccount?.ownerName}</strong> ({activeAccount?.ownerEmail})
                 </DialogDescription>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => setShowSwitchUser(!showSwitchUser)}
-                className="rounded-md border border-[#D4AF37]/40 bg-[#16385C] px-3 py-1.5 font-serif text-[11px] font-semibold text-[#E6C663] hover:bg-[#1a4470] transition"
+                className="rounded-md border border-gold/40 bg-secondary px-3 py-1.5 font-serif text-[11px] font-semibold text-gold hover:bg-secondary transition"
               >
                 Switch Account Profile
               </Button>
@@ -351,24 +351,24 @@ export function MemberPortalModal({
 
           {/* Account Profile Switcher Drawer */}
           {showSwitchUser && (
-            <div className="mt-4 p-4 rounded-xl bg-black/40 border border-[#D4AF37]/30 space-y-2 animate-in fade-in">
-              <p className="text-xs font-serif font-bold text-[#E6C663]">Select Registered Member Account:</p>
+            <div className="mt-4 p-4 rounded-lg bg-background/40 border border-gold/30 space-y-2 animate-in fade-in">
+              <p className="text-xs font-serif font-bold text-gold">Select Registered Member Account:</p>
               <div className="grid sm:grid-cols-2 gap-2 text-xs">
                 {accounts.map((acct) => (
-                  <Button
+                  <Button variant="ghost"
                     key={acct.id}
                     type="button"
                     onClick={() => handleSelectMember(acct)}
                     className={`flex items-start justify-between p-2.5 rounded-lg border text-left transition ${
                       activeAccount?.id === acct.id
-                        ? "border-[#E6C663] bg-[#E6C663]/10 text-white"
-                        : "border-slate-700 bg-slate-900/60 text-slate-300 hover:bg-slate-800"
+                        ? "border-gold bg-gold/10 text-foreground"
+                        : "border-border bg-muted/60 text-foreground hover:bg-muted"
                     }`}
                   >
                     <div>
                       <p className="font-bold">{acct.ownerName}</p>
-                      <p className="text-[10px] text-slate-400">{acct.name} ({acct.accountNumberMasked})</p>
-                      <p className="text-[10px] text-[#E6C663]">Auth Email: {acct.ownerEmail}</p>
+                      <p className="text-[10px] text-foreground">{acct.name} ({acct.accountNumberMasked})</p>
+                      <p className="text-[10px] text-gold">Auth Email: {acct.ownerEmail}</p>
                     </div>
                     <span className="font-mono font-bold">${acct.balance.toLocaleString()}</span>
                   </Button>
@@ -378,19 +378,19 @@ export function MemberPortalModal({
           )}
 
           {/* Navigation Tabs */}
-          <div className="mt-6 flex border-b border-[#D4AF37]/20 text-xs font-serif">
-            <Button
+          <div className="mt-6 flex border-b border-gold/20 text-xs font-serif">
+            <Button variant="ghost"
               type="button"
               onClick={() => setActiveTab("overview")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
                 activeTab === "overview"
-                  ? "border-[#E6C663] text-[#E6C663]"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-gold text-gold"
+                  : "border-transparent text-foreground hover:text-foreground"
               }`}
             >
               <CreditCard className="h-3.5 w-3.5" /> Accounts & Balances
             </Button>
-            <Button
+            <Button variant="ghost"
               type="button"
               onClick={() => {
                 setActiveTab("transfer");
@@ -398,19 +398,19 @@ export function MemberPortalModal({
               }}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
                 activeTab === "transfer"
-                  ? "border-[#E6C663] text-[#E6C663]"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-gold text-gold"
+                  : "border-transparent text-foreground hover:text-foreground"
               }`}
             >
               <Send className="h-3.5 w-3.5" /> Send Money (Domestic & International)
             </Button>
-            <Button
+            <Button variant="ghost"
               type="button"
               onClick={() => setActiveTab("history")}
               className={`pb-2.5 px-4 font-bold border-b-2 transition flex items-center gap-1.5 ${
                 activeTab === "history"
-                  ? "border-[#E6C663] text-[#E6C663]"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "border-gold text-gold"
+                  : "border-transparent text-foreground hover:text-foreground"
               }`}
             >
               <History className="h-3.5 w-3.5" /> Outbound Transfer History
@@ -424,10 +424,10 @@ export function MemberPortalModal({
           {activeTab === "overview" && (
             <div className="space-y-6">
               <div>
-                <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-gold">
                   Depository Accounts Ledger
                 </span>
-                <h3 className="font-serif text-xl font-bold text-[#102A43]">
+                <h3 className="font-serif text-xl font-bold text-foreground">
                   Member Balance Overview
                 </h3>
               </div>
@@ -444,34 +444,34 @@ export function MemberPortalModal({
                   .map((acct) => (
                     <div
                       key={acct.id}
-                      className="rounded-2xl border border-[#E3DCCE] bg-white p-5 shadow-xs space-y-3"
+                      className="rounded-lg border border-border bg-card p-5 shadow-xs space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-serif font-bold text-sm text-[#102A43]">{acct.name}</span>
+                        <span className="font-serif font-bold text-sm text-foreground">{acct.name}</span>
                         <span className="font-mono text-xs text-muted-foreground">{acct.accountNumberMasked}</span>
                       </div>
 
                       <div className="flex items-baseline justify-between">
                         <div>
                           <p className="text-[10px] text-muted-foreground uppercase font-serif">Available Balance</p>
-                          <p className="font-serif text-2xl font-bold text-[#102A43] mt-0.5">
+                          <p className="font-serif text-2xl font-bold text-foreground mt-0.5">
                             ${acct.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </p>
                         </div>
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => {
                             setSelectedSenderId(acct.id);
                             setActiveTab("transfer");
                             setTransferStep(1);
                           }}
-                          className="rounded-md border border-[#9E7D2B] bg-[#102A43] px-3 py-1.5 font-serif text-[11px] font-bold text-[#FBF9F5] hover:bg-[#16385C] transition flex items-center gap-1 shadow-xs"
+                          className="rounded-md border border-gold bg-navy px-3 py-1.5 font-serif text-[11px] font-bold text-foreground hover:bg-secondary transition flex items-center gap-1 shadow-xs"
                         >
-                          <Send className="h-3 w-3 text-[#E6C663]" /> Transfer
+                          <Send className="h-3 w-3 text-gold" /> Transfer
                         </Button>
                       </div>
 
-                      <div className="pt-2 border-t border-[#E3DCCE] flex justify-between text-[11px] text-muted-foreground">
+                      <div className="pt-2 border-t border-border flex justify-between text-[11px] text-muted-foreground">
                         <span>ABA Routing: 071922841</span>
                         <span>Owner: {acct.ownerName}</span>
                       </div>
@@ -480,23 +480,23 @@ export function MemberPortalModal({
               </div>
 
               {/* Quick Actions & Security Notice */}
-              <div className="rounded-xl border border-[#9E7D2B]/30 bg-[#FFFDF9] p-4 text-xs flex items-center justify-between gap-4">
+              <div className="rounded-lg border border-gold/30 bg-card p-4 text-xs flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-6 w-6 text-emerald-600 shrink-0" />
+                  <ShieldCheck className="h-6 w-6 text-foreground shrink-0" />
                   <div>
-                    <p className="font-serif font-bold text-[#102A43]">Transfers Guarded by Email Multi-Factor Authorization</p>
+                    <p className="font-serif font-bold text-foreground">Transfers Guarded by Email Multi-Factor Authorization</p>
                     <p className="text-muted-foreground">
                       Outbound funds transfers require one-time passkey confirmation to your registered email ({maskEmail(activeAccount?.ownerEmail || "")}) and undergo compliance review before release.
                     </p>
                   </div>
                 </div>
-                <Button
+                <Button variant="ghost"
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
                     setTransferStep(1);
                   }}
-                  className="rounded-md bg-[#102A43] px-4 py-2 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shrink-0"
+                  className="rounded-md bg-navy px-4 py-2 font-serif text-xs font-bold text-foreground hover:bg-secondary shrink-0"
                 >
                   Send Wire Now
                 </Button>
@@ -519,10 +519,10 @@ export function MemberPortalModal({
                     key={s.num}
                     className={`rounded-lg p-2 text-center border ${
                       transferStep === s.num
-                        ? "border-[#102A43] bg-[#102A43] text-[#E6C663] font-bold"
+                        ? "border-navy bg-navy text-gold font-bold"
                         : transferStep > s.num
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-800 font-semibold"
-                        : "border-[#E3DCCE] bg-white text-muted-foreground"
+                        ? "border-border bg-muted text-foreground font-semibold"
+                        : "border-border bg-card text-muted-foreground"
                     }`}
                   >
                     <span>{s.label}</span>
@@ -535,37 +535,37 @@ export function MemberPortalModal({
                 <form onSubmit={handleProceedToReview} className="space-y-5">
                   {/* Transfer Classification */}
                   <div className="grid sm:grid-cols-2 gap-3">
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => {
                         setTransferType("domestic");
                         setCurrency("USD");
                       }}
-                      className={`flex items-start gap-3 rounded-xl border p-3 text-left transition ${
+                      className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
                         transferType === "domestic"
-                          ? "border-[#102A43] bg-white ring-2 ring-[#102A43]/20"
-                          : "border-[#E3DCCE] bg-[#FFFDF9]"
+                          ? "border-navy bg-card ring-2 ring-navy/20"
+                          : "border-border bg-card"
                       }`}
                     >
-                      <Building2 className="h-5 w-5 text-[#102A43] shrink-0 mt-0.5" />
+                      <Building2 className="h-5 w-5 text-foreground shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-serif font-bold text-xs text-[#102A43]">Domestic Transfer (Fedwire / ACH)</p>
+                        <p className="font-serif font-bold text-xs text-foreground">Domestic Transfer (Fedwire / ACH)</p>
                         <p className="text-[11px] text-muted-foreground">Free member wire ($0.00). Same-day execution.</p>
                       </div>
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => setTransferType("international")}
-                      className={`flex items-start gap-3 rounded-xl border p-3 text-left transition ${
+                      className={`flex items-start gap-3 rounded-lg border p-3 text-left transition ${
                         transferType === "international"
-                          ? "border-[#102A43] bg-white ring-2 ring-[#102A43]/20"
-                          : "border-[#E3DCCE] bg-[#FFFDF9]"
+                          ? "border-navy bg-card ring-2 ring-navy/20"
+                          : "border-border bg-card"
                       }`}
                     >
-                      <Globe className="h-5 w-5 text-[#9E7D2B] shrink-0 mt-0.5" />
+                      <Globe className="h-5 w-5 text-gold shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-serif font-bold text-xs text-[#102A43]">International Transfer (SWIFT GPI)</p>
+                        <p className="font-serif font-bold text-xs text-foreground">International Transfer (SWIFT GPI)</p>
                         <p className="text-[11px] text-muted-foreground">Cross-border multi-currency wire ($35.00 fee).</p>
                       </div>
                     </Button>
@@ -573,13 +573,13 @@ export function MemberPortalModal({
 
                   {/* Sender Account */}
                   <div>
-                    <label className="block text-xs font-serif font-semibold text-[#102A43] mb-1">
+                    <label className="block text-xs font-serif font-semibold text-foreground mb-1">
                       Originating Account *
                     </label>
                     <select
                       value={selectedSenderId}
                       onChange={(e) => setSelectedSenderId(e.target.value)}
-                      className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 text-xs text-[#102A43] font-semibold"
+                      className="w-full rounded-lg border border-input bg-card px-3 py-2 text-xs text-foreground font-semibold"
                     >
                       {memberAccounts.map((a) => (
                         <option key={a.id} value={a.id}>
@@ -592,7 +592,7 @@ export function MemberPortalModal({
                   {/* Beneficiary Details */}
                   <div className="grid sm:grid-cols-2 gap-3 text-xs">
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                      <label className="block font-serif font-semibold text-foreground mb-1">
                         Beneficiary Full Legal Name *
                       </label>
                       <input
@@ -601,15 +601,15 @@ export function MemberPortalModal({
                         value={recipientFullName}
                         onChange={(e) => setRecipientFullName(e.target.value)}
                         placeholder="e.g. Jonathan Sterling"
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2"
                       />
                       {errors.recipientFullName && (
-                        <p className="text-xs text-red-600 mt-1">{errors.recipientFullName}</p>
+                        <p className="text-xs text-foreground mt-1">{errors.recipientFullName}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                      <label className="block font-serif font-semibold text-foreground mb-1">
                         Beneficiary Bank Name *
                       </label>
                       <input
@@ -618,17 +618,17 @@ export function MemberPortalModal({
                         value={recipientBankName}
                         onChange={(e) => setRecipientBankName(e.target.value)}
                         placeholder="e.g. JPMorgan Chase or Barclays"
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2"
                       />
                       {errors.recipientBankName && (
-                        <p className="text-xs text-red-600 mt-1">{errors.recipientBankName}</p>
+                        <p className="text-xs text-foreground mt-1">{errors.recipientBankName}</p>
                       )}
                     </div>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-3 text-xs">
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                      <label className="block font-serif font-semibold text-foreground mb-1">
                         {transferType === "domestic" ? "Recipient Account Number *" : "Recipient IBAN or Account # *"}
                       </label>
                       <input
@@ -637,16 +637,16 @@ export function MemberPortalModal({
                         value={accountNumberOrIBAN}
                         onChange={(e) => setAccountNumberOrIBAN(e.target.value)}
                         placeholder={transferType === "domestic" ? "e.g. 8920194812" : "e.g. GB29NWBK60161331926819"}
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-mono"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2 font-mono"
                       />
                       {errors.accountNumberOrIBAN && (
-                        <p className="text-xs text-red-600 mt-1">{errors.accountNumberOrIBAN}</p>
+                        <p className="text-xs text-foreground mt-1">{errors.accountNumberOrIBAN}</p>
                       )}
                     </div>
 
                     {transferType === "domestic" ? (
                       <div>
-                        <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                        <label className="block font-serif font-semibold text-foreground mb-1">
                           Confirm Account Number *
                         </label>
                         <input
@@ -655,15 +655,15 @@ export function MemberPortalModal({
                           value={confirmAccount}
                           onChange={(e) => setConfirmAccount(e.target.value)}
                           placeholder="Re-enter account number"
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-mono"
+                          className="w-full rounded-lg border border-input bg-card px-3 py-2 font-mono"
                         />
                         {errors.confirmAccount && (
-                          <p className="text-xs text-red-600 mt-1">{errors.confirmAccount}</p>
+                          <p className="text-xs text-foreground mt-1">{errors.confirmAccount}</p>
                         )}
                       </div>
                     ) : (
                       <div>
-                        <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                        <label className="block font-serif font-semibold text-foreground mb-1">
                           SWIFT / BIC Code *
                         </label>
                         <input
@@ -672,10 +672,10 @@ export function MemberPortalModal({
                           value={bankIdentifierCode}
                           onChange={(e) => setBankIdentifierCode(e.target.value.toUpperCase())}
                           placeholder="e.g. BARCGB22XXX"
-                          className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-mono uppercase"
+                          className="w-full rounded-lg border border-input bg-card px-3 py-2 font-mono uppercase"
                         />
                         {errors.bankIdentifierCode && (
-                          <p className="text-xs text-red-600 mt-1">{errors.bankIdentifierCode}</p>
+                          <p className="text-xs text-foreground mt-1">{errors.bankIdentifierCode}</p>
                         )}
                       </div>
                     )}
@@ -683,7 +683,7 @@ export function MemberPortalModal({
 
                   {transferType === "domestic" && (
                     <div className="text-xs">
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                      <label className="block font-serif font-semibold text-foreground mb-1">
                         9-Digit ABA Routing Transit Number *
                       </label>
                       <input
@@ -693,10 +693,10 @@ export function MemberPortalModal({
                         value={bankIdentifierCode}
                         onChange={(e) => setBankIdentifierCode(e.target.value.replace(/\D/g, ""))}
                         placeholder="e.g. 021000021"
-                        className="w-full sm:w-1/2 rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-mono"
+                        className="w-full sm:w-1/2 rounded-lg border border-input bg-card px-3 py-2 font-mono"
                       />
                       {errors.bankIdentifierCode && (
-                        <p className="text-xs text-red-600 mt-1">{errors.bankIdentifierCode}</p>
+                        <p className="text-xs text-foreground mt-1">{errors.bankIdentifierCode}</p>
                       )}
                     </div>
                   )}
@@ -707,7 +707,7 @@ export function MemberPortalModal({
                   {/* Amount & Purpose */}
                   <div className="grid sm:grid-cols-3 gap-3 text-xs">
                     <div className="sm:col-span-2">
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">
+                      <label className="block font-serif font-semibold text-foreground mb-1">
                         Transfer Amount *
                       </label>
                       <input
@@ -718,17 +718,17 @@ export function MemberPortalModal({
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-serif font-bold text-sm"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2 font-serif font-bold text-sm"
                       />
-                      {errors.amount && <p className="text-xs text-red-600 mt-1">{errors.amount}</p>}
+                      {errors.amount && <p className="text-xs text-foreground mt-1">{errors.amount}</p>}
                     </div>
 
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">Currency</label>
+                      <label className="block font-serif font-semibold text-foreground mb-1">Currency</label>
                       <select
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2 font-semibold"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2 font-semibold"
                       >
                         <option value="USD">USD ($)</option>
                         <option value="EUR">EUR (€)</option>
@@ -741,11 +741,11 @@ export function MemberPortalModal({
 
                   <div className="grid sm:grid-cols-2 gap-3 text-xs">
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">Purpose *</label>
+                      <label className="block font-serif font-semibold text-foreground mb-1">Purpose *</label>
                       <select
                         value={transferPurpose}
                         onChange={(e) => setTransferPurpose(e.target.value)}
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2"
                       >
                         <option value="Family Living Support & Expenses">Family Living Support & Expenses</option>
                         <option value="Commercial Vendor / Supplier Invoice">Commercial Vendor / Supplier Invoice</option>
@@ -754,24 +754,24 @@ export function MemberPortalModal({
                       </select>
                     </div>
                     <div>
-                      <label className="block font-serif font-semibold text-[#102A43] mb-1">Custom Memo</label>
+                      <label className="block font-serif font-semibold text-foreground mb-1">Custom Memo</label>
                       <input
                         type="text"
                         value={customMemo}
                         onChange={(e) => setCustomMemo(e.target.value)}
                         placeholder="e.g. Invoice #8412"
-                        className="w-full rounded-lg border border-[#D5CEBF] bg-white px-3 py-2"
+                        className="w-full rounded-lg border border-input bg-card px-3 py-2"
                       />
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex justify-end pt-2">
-                    <Button
+                    <Button variant="ghost"
                       type="submit"
-                      className="rounded-md border border-[#D4AF37] bg-[#102A43] px-6 py-2.5 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition flex items-center gap-1.5"
+                      className="rounded-md border border-gold bg-navy px-6 py-2.5 font-serif text-xs font-bold text-foreground hover:bg-secondary shadow-md transition flex items-center gap-1.5"
                     >
-                      Review Transfer <ArrowRight className="h-3.5 w-3.5 text-[#E6C663]" />
+                      Review Transfer <ArrowRight className="h-3.5 w-3.5 text-gold" />
                     </Button>
                   </div>
                 </form>
@@ -780,22 +780,22 @@ export function MemberPortalModal({
               {/* STEP 2: REVIEW SCREEN */}
               {transferStep === 2 && (
                 <div className="space-y-5 text-xs">
-                  <div className="rounded-xl border border-[#E3DCCE] bg-white p-5 space-y-4">
-                    <h4 className="font-serif font-bold text-base text-[#102A43]">
+                  <div className="rounded-lg border border-border bg-card p-5 space-y-4">
+                    <h4 className="font-serif font-bold text-base text-foreground">
                       Confirm Wire Transfer Details
                     </h4>
 
                     <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="rounded-lg bg-[#FAF8F5] p-3 space-y-1">
+                      <div className="rounded-lg bg-background p-3 space-y-1">
                         <span className="text-[10px] text-muted-foreground uppercase font-serif">Originating Account</span>
-                        <p className="font-bold text-[#102A43]">{senderAccount?.name}</p>
+                        <p className="font-bold text-foreground">{senderAccount?.name}</p>
                         <p className="font-mono text-muted-foreground">{senderAccount?.accountNumberMasked}</p>
                         <p className="text-[11px] text-muted-foreground">Auth Email: {senderAccount?.ownerEmail}</p>
                       </div>
 
-                      <div className="rounded-lg bg-[#FAF8F5] p-3 space-y-1">
+                      <div className="rounded-lg bg-background p-3 space-y-1">
                         <span className="text-[10px] text-muted-foreground uppercase font-serif">Beneficiary Account</span>
-                        <p className="font-bold text-[#102A43]">{recipientFullName}</p>
+                        <p className="font-bold text-foreground">{recipientFullName}</p>
                         <p className="text-muted-foreground">{recipientBankName}</p>
                         <p className="text-xs text-muted-foreground">Bank address: {formatWireAddress(recipientBankAddress)}</p>
                         <p className="text-xs text-muted-foreground">Recipient address: {formatWireAddress(recipientAddress)}</p>
@@ -807,10 +807,10 @@ export function MemberPortalModal({
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-[#9E7D2B]/30 bg-[#FFFDF9] p-4 space-y-2">
+                    <div className="rounded-lg border border-gold/30 bg-card p-4 space-y-2">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Principal:</span>
-                        <span className="font-serif font-bold text-[#102A43]">
+                        <span className="font-serif font-bold text-foreground">
                           {currency} {numAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </span>
                       </div>
@@ -822,40 +822,40 @@ export function MemberPortalModal({
                       )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Institutional Wire Fee:</span>
-                        <span className="font-semibold text-[#102A43]">
+                        <span className="font-semibold text-foreground">
                           {fee === 0 ? "Waived ($0.00)" : `$${fee.toFixed(2)} USD`}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Delivery Window:</span>
-                        <span className="font-medium text-emerald-700">{estimatedDelivery}</span>
+                        <span className="font-medium text-foreground">{estimatedDelivery}</span>
                       </div>
-                      <div className="pt-2 border-t border-[#E3DCCE] flex justify-between font-serif font-bold text-[#102A43] text-sm">
+                      <div className="pt-2 border-t border-border flex justify-between font-serif font-bold text-foreground text-sm">
                         <span>Total Debit Amount:</span>
                         <span>${totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD</span>
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-[11px] text-amber-900 flex items-start gap-2">
-                      <AlertTriangle className="h-4 w-4 text-amber-700 shrink-0 mt-0.5" />
+                    <div className="rounded-lg border border-border bg-muted p-3 text-[11px] text-foreground flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-foreground shrink-0 mt-0.5" />
                       <div>
                         <strong>Administrative Sign-Off Policy:</strong> In compliance with federal regulations, all outbound transfers are submitted as <strong>Pending Review</strong> and must be approved by an authorized compliance officer. Transfers are never executed automatically.
                       </div>
                     </div>
 
                     <div className="flex justify-between pt-2">
-                      <Button
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => setTransferStep(1)}
-                        className="rounded border border-[#D5CEBF] bg-white px-4 py-2 font-serif font-semibold text-[#102A43]"
+                        className="rounded border border-input bg-card px-4 py-2 font-serif font-semibold text-foreground"
                       >
                         Edit Details
                       </Button>
 
-                      <Button
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => setTransferStep(3)}
-                        className="rounded-md border border-[#D4AF37] bg-[#102A43] px-6 py-2 font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition"
+                        className="rounded-md border border-gold bg-navy px-6 py-2 font-serif font-bold text-foreground hover:bg-secondary shadow-md transition"
                       >
                         Proceed to Email OTP Verification →
                       </Button>
@@ -868,40 +868,40 @@ export function MemberPortalModal({
               {transferStep === 3 && (
                 <div className="space-y-4 max-w-md mx-auto text-center text-xs">
                   {/* Sandbox Email Simulation Banner */}
-                  <div className="rounded-xl border border-[#9E7D2B]/40 bg-[#102A43] p-4 text-[#FBF9F5] space-y-2 text-left">
+                  <div className="rounded-lg border border-gold/40 bg-navy p-4 text-foreground space-y-2 text-left">
                     <div className="flex items-center justify-between">
-                      <span className="font-serif font-bold text-[11px] text-[#E6C663] flex items-center gap-1.5">
+                      <span className="font-serif font-bold text-[11px] text-gold flex items-center gap-1.5">
                         <Mail className="h-3.5 w-3.5" /> Mail OTP Simulator
                       </span>
-                      <span className="text-[9px] bg-[#E6C663] text-[#102A43] font-bold px-1.5 py-0.5 rounded">
+                      <span className="text-[9px] bg-gold text-foreground font-bold px-1.5 py-0.5 rounded">
                         Account Mail
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-300">
+                    <p className="text-[11px] text-foreground">
                       Dispatched to account registration mail:{" "}
-                      <strong className="text-white">{maskEmail(senderAccount?.ownerEmail || "")}</strong>
+                      <strong className="text-foreground">{maskEmail(senderAccount?.ownerEmail || "")}</strong>
                     </p>
-                    <div className="flex items-center justify-between bg-black/40 p-2 rounded border border-white/10 font-mono text-xs">
-                      <span className="text-slate-400">Passkey:</span>
-                      <span className="font-bold text-base text-[#E6C663] tracking-widest">{simulatedExpectedOtp}</span>
-                      <Button
+                    <div className="flex items-center justify-between bg-background/40 p-2 rounded border border-border/10 font-mono text-xs">
+                      <span className="text-foreground">Passkey:</span>
+                      <span className="font-bold text-base text-gold tracking-widest">{simulatedExpectedOtp}</span>
+                      <Button variant="ghost"
                         type="button"
                         onClick={() => {
                           navigator.clipboard.writeText(simulatedExpectedOtp);
                           setOtpCopied(true);
                           setTimeout(() => setOtpCopied(false), 2000);
                         }}
-                        className="text-[10px] text-slate-300 hover:text-white"
+                        className="text-[10px] text-foreground hover:text-foreground"
                       >
                         {otpCopied ? "Copied" : "Copy"}
                       </Button>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-[#E3DCCE] bg-white p-6 space-y-4">
-                    <KeyRound className="h-10 w-10 text-[#102A43] mx-auto" />
+                  <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+                    <KeyRound className="h-10 w-10 text-foreground mx-auto" />
                     <div>
-                      <h4 className="font-serif font-bold text-lg text-[#102A43]">Enter Authorization Passkey</h4>
+                      <h4 className="font-serif font-bold text-lg text-foreground">Enter Authorization Passkey</h4>
                       <p className="text-muted-foreground mt-0.5">
                         Enter the 6-digit code sent to {maskEmail(senderAccount?.ownerEmail || "")} to submit this transfer for officer review.
                       </p>
@@ -918,18 +918,18 @@ export function MemberPortalModal({
                           setOtpError("");
                         }}
                         placeholder="••••••"
-                        className="w-40 mx-auto text-center rounded-lg border-2 border-[#102A43] bg-[#FFFDF9] py-2.5 text-xl font-mono font-bold tracking-[0.3em] text-[#102A43]"
+                        className="w-40 mx-auto text-center rounded-lg border-2 border-navy bg-card py-2.5 text-xl font-mono font-bold tracking-[0.3em] text-foreground"
                       />
-                      {otpError && <p className="text-xs text-red-600 font-medium">{otpError}</p>}
+                      {otpError && <p className="text-xs text-foreground font-medium">{otpError}</p>}
 
                       <div className="flex justify-center text-[11px] text-muted-foreground">
                         {otpCountdown > 0 ? (
                           <span>Resend available in {otpCountdown}s</span>
                         ) : (
-                          <Button
+                          <Button variant="ghost"
                             type="button"
                             onClick={generateNewOtp}
-                            className="text-[#102A43] font-semibold hover:underline"
+                            className="text-foreground font-semibold hover:underline"
                           >
                             Resend One-Time Passcode
                           </Button>
@@ -937,13 +937,13 @@ export function MemberPortalModal({
                       </div>
 
                       <div className="pt-2 flex flex-col gap-2">
-                        <Button
+                        <Button variant="ghost"
                           type="submit"
-                          className="w-full rounded-md border border-[#D4AF37] bg-[#102A43] py-2.5 font-serif text-xs font-bold text-[#FBF9F5] hover:bg-[#16385C] shadow-md transition"
+                          className="w-full rounded-md border border-gold bg-navy py-2.5 font-serif text-xs font-bold text-foreground hover:bg-secondary shadow-md transition"
                         >
                           Verify & Submit for Review
                         </Button>
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => setTransferStep(2)}
                           className="text-xs text-muted-foreground hover:underline"
@@ -958,55 +958,55 @@ export function MemberPortalModal({
 
               {/* STEP 4: CONFIRMATION RECEIPT */}
               {transferStep === 4 && completedTransfer && (
-                <div className="rounded-xl border border-[#E3DCCE] bg-white p-6 space-y-5 text-xs text-center animate-in fade-in">
-                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-amber-100 text-amber-800">
-                    <Clock className="h-6 w-6 text-amber-700 animate-pulse" />
+                <div className="rounded-lg border border-border bg-card p-6 space-y-5 text-xs text-center animate-in fade-in">
+                  <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-muted text-foreground">
+                    <Clock className="h-6 w-6 text-foreground animate-pulse" />
                   </div>
 
                   <div>
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-serif font-bold text-amber-800 border border-amber-300">
+                    <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-serif font-bold text-foreground border border-border">
                       Status: PENDING REVIEW
                     </span>
-                    <h4 className="font-serif text-2xl font-bold text-[#102A43] mt-2">
+                    <h4 className="font-serif text-2xl font-bold text-foreground mt-2">
                       Transfer Enqueued for Administrator Approval
                     </h4>
                     <p className="text-muted-foreground max-w-sm mx-auto mt-1">
-                      Reference: <strong className="font-mono text-[#102A43]">{completedTransfer.referenceNumber}</strong>
+                      Reference: <strong className="font-mono text-foreground">{completedTransfer.referenceNumber}</strong>
                     </p>
                   </div>
 
-                  <div className="rounded-lg bg-[#FAF8F5] border border-[#E3DCCE] p-4 text-left space-y-1.5">
+                  <div className="rounded-lg bg-background border border-border p-4 text-left space-y-1.5">
                     <p><strong>Beneficiary:</strong> {completedTransfer.recipientFullName} ({completedTransfer.recipientBankName})</p>
                     <p><strong>Bank address:</strong> {formatWireAddress(completedTransfer.recipientBankAddress)}</p>
                     <p><strong>Account:</strong> {completedTransfer.accountNumberMasked} · {completedTransfer.bankIdentifierType.toUpperCase()}: {completedTransfer.bankIdentifierCode}</p>
                     <p><strong>Total Debit:</strong> ${completedTransfer.totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })} USD</p>
                     <p><strong>Estimated Settlement:</strong> {completedTransfer.estimatedDelivery}</p>
-                    <p className="text-muted-foreground text-[11px] pt-1 border-t border-[#E3DCCE]">
+                    <p className="text-muted-foreground text-[11px] pt-1 border-t border-border">
                       MFA Verified to {completedTransfer.verificationEmail}. Never completed automatically; awaiting officer clearance.
                     </p>
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => downloadTransferReceipt(completedTransfer)}
-                      className="rounded-md border border-[#D5CEBF] bg-white px-4 py-2 font-serif font-semibold text-[#102A43] hover:bg-[#FAF8F5] flex items-center gap-1.5"
+                      className="rounded-md border border-input bg-card px-4 py-2 font-serif font-semibold text-foreground hover:bg-background flex items-center gap-1.5"
                     >
-                      <Download className="h-3.5 w-3.5 text-[#9E7D2B]" /> Download Receipt Slip (.txt)
+                      <Download className="h-3.5 w-3.5 text-gold" /> Download Receipt Slip (.txt)
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={() => setActiveTab("history")}
-                      className="rounded-md bg-[#102A43] px-4 py-2 font-serif font-bold text-[#FBF9F5] hover:bg-[#16385C]"
+                      className="rounded-md bg-navy px-4 py-2 font-serif font-bold text-foreground hover:bg-secondary"
                     >
                       View in Transfer History →
                     </Button>
 
-                    <Button
+                    <Button variant="ghost"
                       type="button"
                       onClick={handleResetTransfer}
-                      className="rounded-md border border-[#D5CEBF] px-3 py-2 text-muted-foreground hover:text-[#102A43]"
+                      className="rounded-md border border-input px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                       New Transfer
                     </Button>
@@ -1019,28 +1019,28 @@ export function MemberPortalModal({
           {/* TAB 3: TRANSFER HISTORY & LIVE STATUS */}
           {activeTab === "history" && (
             <div className="space-y-4 text-xs">
-              <div className="flex items-center justify-between border-b border-[#E3DCCE] pb-3">
+              <div className="flex items-center justify-between border-b border-border pb-3">
                 <div>
-                  <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-[#9E7D2B]">
+                  <span className="text-[10px] font-serif font-bold uppercase tracking-wider text-gold">
                     Audit Log
                   </span>
-                  <h3 className="font-serif text-lg font-bold text-[#102A43]">
+                  <h3 className="font-serif text-lg font-bold text-foreground">
                     Your Outbound Transfers Ledger
                   </h3>
                 </div>
-                <Button
+                <Button variant="ghost"
                   type="button"
                   onClick={() => {
                     setActiveTab("transfer");
                     setTransferStep(1);
                   }}
-                  className="rounded-md bg-[#102A43] px-3 py-1.5 font-serif text-[11px] font-bold text-[#FBF9F5] hover:bg-[#16385C]"
+                  className="rounded-md bg-navy px-3 py-1.5 font-serif text-[11px] font-bold text-foreground hover:bg-secondary"
                 >
                   + New Wire Transfer
                 </Button>
               </div>
 
-              <div className="divide-y divide-[#E3DCCE]">
+              <div className="divide-y divide-border">
                 {memberTransfers.length === 0 ? (
                   <p className="py-8 text-center text-muted-foreground">No transfer records found.</p>
                 ) : (
@@ -1048,41 +1048,41 @@ export function MemberPortalModal({
                     <div key={trf.id} className="py-3 flex flex-wrap items-center justify-between gap-3">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-[#102A43]">{trf.referenceNumber}</span>
+                          <span className="font-mono font-bold text-foreground">{trf.referenceNumber}</span>
                           <span
                             className={`px-2 py-0.5 rounded-full text-[10px] font-serif font-bold border ${
                               trf.status === "Pending Review"
-                                ? "bg-amber-100 text-amber-800 border-amber-300"
+                                ? "bg-muted text-foreground border-border"
                                 : trf.status === "Approved"
-                                ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                ? "bg-muted text-foreground border-border"
                                 : trf.status === "Flagged for AML/Compliance"
-                                ? "bg-purple-100 text-purple-800 border-purple-300"
+                                ? "bg-muted text-foreground border-border"
                                 : trf.status === "Information Requested"
-                                ? "bg-blue-100 text-blue-800 border-blue-300"
-                                : "bg-red-100 text-red-800 border-red-300"
+                                ? "bg-muted text-foreground border-border"
+                                : "bg-muted text-foreground border-border"
                             }`}
                           >
                             {trf.status}
                           </span>
-                          <span className="uppercase text-[9px] font-bold text-muted-foreground bg-slate-100 px-1 py-0.5 rounded">
+                          <span className="uppercase text-[9px] font-bold text-muted-foreground bg-muted px-1 py-0.5 rounded">
                             {trf.type}
                           </span>
                         </div>
                         <p className="text-muted-foreground">
-                          To: <strong className="text-[#102A43]">{trf.recipientFullName}</strong> ({trf.recipientBankName}) · From: {trf.senderAccount.name}
+                          To: <strong className="text-foreground">{trf.recipientFullName}</strong> ({trf.recipientBankName}) · From: {trf.senderAccount.name}
                         </p>
                         {trf.adminNotes && (
-                          <p className="text-[11px] text-slate-700 bg-[#FAF8F5] p-1.5 rounded border border-[#E3DCCE]">
+                          <p className="text-[11px] text-foreground bg-background p-1.5 rounded border border-border">
                             <strong>Officer Note:</strong> {trf.adminNotes}
                           </p>
                         )}
                         {trf.requestInfoReason && (
-                          <p className="text-[11px] text-blue-800 bg-blue-50 p-1.5 rounded border border-blue-200">
+                          <p className="text-[11px] text-foreground bg-muted p-1.5 rounded border border-border">
                             <strong>Action Required:</strong> {trf.requestInfoReason}
                           </p>
                         )}
                         {trf.rejectionReason && (
-                          <p className="text-[11px] text-red-800 bg-red-50 p-1.5 rounded border border-red-200">
+                          <p className="text-[11px] text-foreground bg-muted p-1.5 rounded border border-border">
                             <strong>Declined:</strong> {trf.rejectionReason}
                           </p>
                         )}
@@ -1090,7 +1090,7 @@ export function MemberPortalModal({
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <span className="font-serif font-bold text-sm text-[#102A43] block">
+                          <span className="font-serif font-bold text-sm text-foreground block">
                             ${trf.totalDebitUSD.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </span>
                           <span className="text-[10px] text-muted-foreground">
@@ -1098,13 +1098,13 @@ export function MemberPortalModal({
                           </span>
                         </div>
 
-                        <Button
+                        <Button variant="ghost"
                           type="button"
                           onClick={() => downloadTransferReceipt(trf)}
                           title="Download receipt"
-                          className="p-1.5 rounded border border-[#D5CEBF] hover:bg-[#FAF8F5]"
+                          className="p-1.5 rounded border border-input hover:bg-background"
                         >
-                          <Download className="h-3.5 w-3.5 text-slate-700" />
+                          <Download className="h-3.5 w-3.5 text-foreground" />
                         </Button>
                       </div>
                     </div>

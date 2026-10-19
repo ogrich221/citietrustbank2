@@ -2,10 +2,10 @@
 
 - [ ] Keep homepage layout unchanged; await the new hero/color reference (no image accompanied the latest message)
 
-- [ ] Complete domestic and international wire details in both transfer entry points
-- [ ] Upper-left back navigation and faint bank logo
-- [ ] Improve member overview and admin setup/review dashboard
-- [ ] Test required wire information and verify both dashboard flows
+- [x] Complete domestic and international wire details in both transfer entry points
+- [x] Upper-left back navigation and faint bank logo
+- [x] Improve member overview and admin setup/review dashboard
+- [x] Test required wire information and verify both dashboard flows
 
 - [x] Midnight blue + gold colour theme (home page + shared tokens)
 - [x] Bank photo hero fills the first half of the home page
